@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import type { Tables } from "@/types/database.types";
 
 export function ProfileForm({ profile }: { profile: Tables<"profiles"> }) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const {
     register,
@@ -35,6 +37,7 @@ export function ProfileForm({ profile }: { profile: Tables<"profiles"> }) {
       return;
     }
     toast.success("Profile updated");
+    router.refresh();
   }
 
   return (

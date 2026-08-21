@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -41,6 +42,7 @@ function toDefaults(note?: Note): NoteFormValues {
 }
 
 export function NoteDialog({ open, onOpenChange, note }: NoteDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [tagsText, setTagsText] = useState(note?.tags?.join(", ") ?? "");
   const [syncedNoteId, setSyncedNoteId] = useState(note?.id);
@@ -77,6 +79,7 @@ export function NoteDialog({ open, onOpenChange, note }: NoteDialogProps) {
       return;
     }
     toast.success(note ? "Note updated" : "Note saved");
+    router.refresh();
     onOpenChange(false);
     if (!note) {
       reset(toDefaults(undefined));

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -39,6 +40,7 @@ export function HobbyMemoryDialog({
   hobbyId,
   hobbyName,
 }: HobbyMemoryDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, reset } = useForm<HobbyMemoryInput>({
     resolver: zodResolver(hobbyMemorySchema),
@@ -54,6 +56,7 @@ export function HobbyMemoryDialog({
       return;
     }
     toast.success("Memory added");
+    router.refresh();
     onOpenChange(false);
     reset(defaults());
   }

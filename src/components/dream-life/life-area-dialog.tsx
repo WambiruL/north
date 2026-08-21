@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -38,6 +39,7 @@ function toDefaults(lifeArea?: LifeArea): LifeAreaInput {
 }
 
 export function LifeAreaDialog({ open, onOpenChange, lifeArea }: LifeAreaDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, reset } = useForm<LifeAreaInput>({
     resolver: zodResolver(lifeAreaSchema),
@@ -53,6 +55,7 @@ export function LifeAreaDialog({ open, onOpenChange, lifeArea }: LifeAreaDialogP
       return;
     }
     toast.success(lifeArea ? "Life area updated" : "Life area added");
+    router.refresh();
     onOpenChange(false);
     if (!lifeArea) reset(toDefaults(undefined));
   }

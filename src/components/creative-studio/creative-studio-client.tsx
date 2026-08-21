@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Lightbulb, Pencil, Trash2, Sparkles, ExternalLink, ImageOff } from "lucide-react";
 import type { Tables } from "@/types/database.types";
@@ -50,6 +51,7 @@ function PromoteIdeaDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -68,6 +70,7 @@ function PromoteIdeaDialog({
       return;
     }
     toast.success("Idea promoted to a project");
+    router.refresh();
     onOpenChange(false);
   }
 
@@ -107,6 +110,7 @@ export function CreativeStudioClient({
   inspirationItems: InspirationItem[];
   autoOpenIdea: boolean;
 }) {
+  const router = useRouter();
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
   const [ideaDialogOpen, setIdeaDialogOpen] = useState(autoOpenIdea);
   const [editingIdea, setEditingIdea] = useState<CreativeIdea | undefined>(undefined);
@@ -132,11 +136,13 @@ export function CreativeStudioClient({
   async function handleDeleteIdea(id: string) {
     await removeIdea(id);
     toast.success("Idea removed");
+    router.refresh();
   }
 
   async function handleDeleteInspiration(id: string) {
     await removeInspirationItem(id);
     toast.success("Removed from inspiration library");
+    router.refresh();
   }
 
   return (

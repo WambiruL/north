@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { Pencil, Trash2, Moon } from "lucide-react";
@@ -22,6 +23,7 @@ export function CheckInsClient({
   checkIns: CheckIn[];
   autoOpen: boolean;
 }) {
+  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(autoOpen);
   const [editing, setEditing] = useState<CheckIn | undefined>(undefined);
 
@@ -38,6 +40,7 @@ export function CheckInsClient({
   async function handleDelete(id: string) {
     await removeCheckIn(id);
     toast.success("Check-in deleted");
+    router.refresh();
   }
 
   return (

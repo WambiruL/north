@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -37,6 +38,7 @@ function toDefaults(idea?: CreativeIdea): CreativeIdeaInput {
 }
 
 export function IdeaDialog({ open, onOpenChange, idea }: IdeaDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<CreativeIdeaInput>({
     resolver: zodResolver(creativeIdeaSchema),
@@ -52,6 +54,7 @@ export function IdeaDialog({ open, onOpenChange, idea }: IdeaDialogProps) {
       return;
     }
     toast.success(idea ? "Idea updated" : "Idea planted");
+    router.refresh();
     onOpenChange(false);
     if (!idea) reset(toDefaults(undefined));
   }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { ArrowLeft, Pencil, Trash2, Sparkles, ImageOff } from "lucide-react";
@@ -34,6 +35,7 @@ export function HobbyDetailClient({
   projects: HobbyProject[];
   memories: HobbyMemory[];
 }) {
+  const router = useRouter();
   const [editHobbyOpen, setEditHobbyOpen] = useState(false);
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<HobbyProject | undefined>(undefined);
@@ -42,16 +44,19 @@ export function HobbyDetailClient({
   async function handleDeleteHobby() {
     await removeHobby(hobby.id);
     toast.success("Hobby deleted");
+    router.refresh();
   }
 
   async function handleDeleteProject(id: string) {
     await removeHobbyProject(hobby.id, id);
     toast.success("Project deleted");
+    router.refresh();
   }
 
   async function handleDeleteMemory(id: string) {
     await removeHobbyMemory(hobby.id, id);
     toast.success("Memory deleted");
+    router.refresh();
   }
 
   function openNewProject() {

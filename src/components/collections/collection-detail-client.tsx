@@ -56,15 +56,18 @@ export function CollectionDetailClient({
     setNewTitle("");
     setNewUrl("");
     setNewNote("");
+    router.refresh();
   }
 
   async function handleToggle(item: CollectionItem) {
     await toggleItemDone(collection.id, item.id, !item.is_done);
+    router.refresh();
   }
 
   async function handleDeleteItem(id: string) {
     await removeCollectionItem(collection.id, id);
     toast.success("Item removed");
+    router.refresh();
   }
 
   async function handleDeleteCollection() {
@@ -83,6 +86,7 @@ export function CollectionDetailClient({
       collection.id,
       reordered.map((i) => i.id),
     );
+    router.refresh();
   }
 
   const doneCount = items.filter((i) => i.is_done).length;

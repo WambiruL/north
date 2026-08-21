@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -51,6 +52,7 @@ export function LearningPathDialog({
   skills,
   onSkillCreated,
 }: LearningPathDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<LearningPathInput>({
     resolver: zodResolver(learningPathSchema),
@@ -66,6 +68,7 @@ export function LearningPathDialog({
       return;
     }
     toast.success(path ? "Learning path updated" : "Learning path created");
+    router.refresh();
     onOpenChange(false);
     if (!path) reset(toDefaults(undefined));
   }

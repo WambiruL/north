@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -59,6 +60,7 @@ function toDefaults(checkIn?: CheckIn): CheckInInput {
 }
 
 export function CheckInDialog({ open, onOpenChange, checkIn }: CheckInDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<
     CheckInFormInput,
@@ -78,6 +80,7 @@ export function CheckInDialog({ open, onOpenChange, checkIn }: CheckInDialogProp
       return;
     }
     toast.success(checkIn ? "Check-in updated" : "Checked in");
+    router.refresh();
     onOpenChange(false);
     if (!checkIn) reset(toDefaults(undefined));
   }

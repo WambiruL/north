@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { Landmark, Pencil, PiggyBank, Plus, Trash2, Wallet } from "lucide-react";
@@ -45,6 +46,7 @@ export function FinancesClient({
   snapshot: { totalBalance: number; monthIncome: number; monthExpense: number };
   autoOpenTransaction: boolean;
 }) {
+  const router = useRouter();
   const [accountDialogOpen, setAccountDialogOpen] = useState(
     () => autoOpenTransaction && accounts.length === 0,
   );
@@ -71,16 +73,19 @@ export function FinancesClient({
   async function handleDeleteAccount(id: string) {
     await removeAccount(id);
     toast.success("Account removed");
+    router.refresh();
   }
 
   async function handleDeleteTransaction(id: string) {
     await removeTransaction(id);
     toast.success("Transaction removed");
+    router.refresh();
   }
 
   async function handleDeleteGoal(id: string) {
     await removeSavingsGoal(id);
     toast.success("Goal removed");
+    router.refresh();
   }
 
   return (

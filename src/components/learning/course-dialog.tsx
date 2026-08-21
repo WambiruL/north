@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -54,6 +55,7 @@ function toDefaults(course?: Course): CourseInput {
 }
 
 export function CourseDialog({ open, onOpenChange, course, paths }: CourseDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, watch, reset } = useForm<CourseInput>({
     resolver: zodResolver(courseSchema) as unknown as Resolver<CourseInput>,
@@ -71,6 +73,7 @@ export function CourseDialog({ open, onOpenChange, course, paths }: CourseDialog
       return;
     }
     toast.success(course ? "Course updated" : "Course added");
+    router.refresh();
     onOpenChange(false);
     if (!course) reset(toDefaults(undefined));
   }

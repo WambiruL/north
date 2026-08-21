@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -43,6 +44,7 @@ export function HobbyProjectDialog({
   hobbyId,
   project,
 }: HobbyProjectDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<HobbyProjectInput>({
     resolver: zodResolver(hobbyProjectSchema),
@@ -58,6 +60,7 @@ export function HobbyProjectDialog({
       return;
     }
     toast.success(project ? "Project updated" : "Project added");
+    router.refresh();
     onOpenChange(false);
     if (!project) reset(toDefaults(undefined));
   }

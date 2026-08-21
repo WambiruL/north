@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { updateAvatar } from "@/server/actions/settings";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +14,7 @@ export function AvatarUpload({
   fullName: string;
   avatarUrl: string | null;
 }) {
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(avatarUrl);
   const [isPending, startTransition] = useTransition();
@@ -29,8 +31,12 @@ export function AvatarUpload({
 
     startTransition(async () => {
       const result = await updateAvatar(formData);
-      if (result?.error) toast.error(result.error);
-      else toast.success("Avatar updated");
+      if (result?.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Avatar updated");
+        router.refresh();
+      }
     });
   }
 

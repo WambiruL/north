@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -34,6 +35,7 @@ function toDefaults(dreamId?: string): DreamGoalInput {
 }
 
 export function DreamGoalDialog({ open, onOpenChange, dreams, dreamId }: DreamGoalDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<DreamGoalInput>({
     resolver: zodResolver(dreamGoalSchema),
@@ -49,6 +51,7 @@ export function DreamGoalDialog({ open, onOpenChange, dreams, dreamId }: DreamGo
       return;
     }
     toast.success("Goal added");
+    router.refresh();
     onOpenChange(false);
     reset(toDefaults(dreamId));
   }

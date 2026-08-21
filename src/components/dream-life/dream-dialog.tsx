@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -56,6 +57,7 @@ function toDefaults(dream?: Dream): DreamInput {
 }
 
 export function DreamDialog({ open, onOpenChange, dream, lifeAreas }: DreamDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<DreamInput>({
     resolver: zodResolver(dreamSchema),
@@ -71,6 +73,7 @@ export function DreamDialog({ open, onOpenChange, dream, lifeAreas }: DreamDialo
       return;
     }
     toast.success(dream ? "Dream updated" : "Dream added");
+    router.refresh();
     onOpenChange(false);
     if (!dream) reset(toDefaults(undefined));
   }

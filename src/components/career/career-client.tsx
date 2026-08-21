@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { Pencil, Trash2, MapPin } from "lucide-react";
@@ -37,6 +38,7 @@ export function CareerClient({
   goals: Goal[];
   skills: Skill[];
 }) {
+  const router = useRouter();
   // Skills created via the picker mid-dialog are merged in immediately for
   // instant UI feedback, ahead of the server revalidation that will
   // eventually fold them into `skillsProp` for good.
@@ -68,6 +70,7 @@ export function CareerClient({
   async function handleDeleteExperience(id: string) {
     await removeExperience(id);
     toast.success("Experience removed");
+    router.refresh();
   }
 
   function openNewMilestone() {
@@ -81,6 +84,7 @@ export function CareerClient({
   async function handleDeleteMilestone(id: string) {
     await removeMilestone(id);
     toast.success("Milestone removed");
+    router.refresh();
   }
 
   function openNewGoal() {
@@ -94,6 +98,7 @@ export function CareerClient({
   async function handleDeleteGoal(id: string) {
     await removeGoal(id);
     toast.success("Goal removed");
+    router.refresh();
   }
 
   return (

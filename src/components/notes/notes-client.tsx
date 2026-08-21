@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Pencil, Trash2, Pin } from "lucide-react";
 import type { Tables } from "@/types/database.types";
@@ -65,6 +66,7 @@ function NoteCard({
 }
 
 export function NotesClient({ notes, autoOpen }: { notes: Note[]; autoOpen: boolean }) {
+  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(autoOpen);
   const [editing, setEditing] = useState<Note | undefined>(undefined);
 
@@ -81,10 +83,12 @@ export function NotesClient({ notes, autoOpen }: { notes: Note[]; autoOpen: bool
   async function handleDelete(id: string) {
     await removeNote(id);
     toast.success("Note deleted");
+    router.refresh();
   }
 
   async function handlePinToggle(note: Note) {
     await setPinned(note.id, !note.pinned);
+    router.refresh();
   }
 
   const pinned = notes.filter((n) => n.pinned);

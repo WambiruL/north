@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
@@ -51,6 +52,7 @@ export function WorkClient({
   clients: ClientRow[];
   autoOpen: "project" | "task" | null;
 }) {
+  const router = useRouter();
   const [tab, setTab] = useState<string>("active");
   const [projectDialogOpen, setProjectDialogOpen] = useState(
     () => autoOpen === "project" || (autoOpen === "task" && projects.length === 0),
@@ -78,6 +80,7 @@ export function WorkClient({
   async function handleDelete(id: string) {
     await removeProject(id);
     toast.success("Project deleted");
+    router.refresh();
   }
 
   const grouped = STATUS_TABS.reduce<Record<string, Project[]>>((acc, s) => {

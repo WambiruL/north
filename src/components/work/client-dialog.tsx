@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ function toDefaults(client?: ClientRow): ClientInput {
 }
 
 export function ClientDialog({ open, onOpenChange, client, onSaved }: ClientDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, reset } = useForm<ClientInput>({
     resolver: zodResolver(clientSchema),
@@ -51,6 +53,7 @@ export function ClientDialog({ open, onOpenChange, client, onSaved }: ClientDial
       return;
     }
     toast.success(client ? "Client updated" : "Client added");
+    router.refresh();
     onOpenChange(false);
     if (!client) reset(toDefaults(undefined));
     onSaved?.(client as ClientRow);

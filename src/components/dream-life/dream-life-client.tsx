@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import type { Tables } from "@/types/database.types";
@@ -56,6 +57,7 @@ export function DreamLifeClient({
   visionItems: VisionItem[];
   autoOpen: "dream_goal" | undefined;
 }) {
+  const router = useRouter();
   // dream dialog
   const [dreamDialogOpen, setDreamDialogOpen] = useState(autoOpen === "dream_goal" && dreams.length === 0);
   const [editingDream, setEditingDream] = useState<Dream | undefined>(undefined);
@@ -145,25 +147,30 @@ export function DreamLifeClient({
   async function handleDeleteDream(id: string) {
     await removeDream(id);
     toast.success("Dream removed");
+    router.refresh();
   }
 
   async function handleDeleteVisionItem(id: string) {
     await removeVisionItem(id);
     toast.success("Removed from vision board");
+    router.refresh();
   }
 
   async function handleDeleteLifeArea(id: string) {
     await removeLifeArea(id);
     toast.success("Life area removed");
+    router.refresh();
   }
 
   async function handleDeleteGoal(id: string) {
     await removeDreamGoal(id);
     toast.success("Goal removed");
+    router.refresh();
   }
 
   async function handleToggleGoal(goal: DreamGoal) {
     await toggleDreamGoalDone(goal.id, !goal.is_done);
+    router.refresh();
   }
 
   return (

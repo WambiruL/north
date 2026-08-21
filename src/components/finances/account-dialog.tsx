@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -48,6 +49,7 @@ function toDefaults(account?: Account): AccountInput {
 }
 
 export function AccountDialog({ open, onOpenChange, account }: AccountDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<AccountInput>({
     resolver: zodResolver(accountSchema) as unknown as Resolver<AccountInput>,
@@ -63,6 +65,7 @@ export function AccountDialog({ open, onOpenChange, account }: AccountDialogProp
       return;
     }
     toast.success(account ? "Account updated" : "Account added");
+    router.refresh();
     onOpenChange(false);
     if (!account) reset(toDefaults(undefined));
   }

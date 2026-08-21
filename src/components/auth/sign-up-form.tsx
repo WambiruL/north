@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 
 export function SignUpForm() {
   const [serverError, setServerError] = useState<string | null>(null);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const {
     register,
     handleSubmit,
@@ -22,6 +23,23 @@ export function SignUpForm() {
     setServerError(null);
     const result = await signUp(values);
     if (result?.error) setServerError(result.error);
+    else if ("needsConfirmation" in result && result.needsConfirmation) {
+      setNeedsConfirmation(true);
+    }
+  }
+
+  if (needsConfirmation) {
+    return (
+      <div className="flex flex-col gap-3 text-center">
+        <h1 className="text-[22px] font-bold tracking-tight text-ink">Check your email</h1>
+        <p className="text-[13.5px] text-muted">
+          We&apos;ve sent a confirmation link. Follow it to activate your account, then sign in.
+        </p>
+        <Link href="/sign-in" className="mt-2 text-[13px] font-semibold text-teal hover:underline">
+          Back to sign in
+        </Link>
+      </div>
+    );
   }
 
   return (

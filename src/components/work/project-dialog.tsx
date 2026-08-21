@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -61,6 +62,7 @@ function toDefaults(project?: Project): ProjectInput {
 }
 
 export function ProjectDialog({ open, onOpenChange, project, clients }: ProjectDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<ProjectInput>({
     resolver: zodResolver(projectSchema) as unknown as Resolver<ProjectInput>,
@@ -76,6 +78,7 @@ export function ProjectDialog({ open, onOpenChange, project, clients }: ProjectD
       return;
     }
     toast.success(project ? "Project updated" : "Project created");
+    router.refresh();
     onOpenChange(false);
     if (!project) reset(toDefaults(undefined));
   }

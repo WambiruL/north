@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ function defaults(): InspirationItemInput {
 }
 
 export function InspirationDialog({ open, onOpenChange }: InspirationDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, reset } = useForm<InspirationItemInput>({
     resolver: zodResolver(inspirationItemSchema),
@@ -43,6 +45,7 @@ export function InspirationDialog({ open, onOpenChange }: InspirationDialogProps
       return;
     }
     toast.success("Saved to your inspiration library");
+    router.refresh();
     onOpenChange(false);
     reset(defaults());
   }

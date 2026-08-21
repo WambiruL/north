@@ -69,15 +69,18 @@ export function ProjectDetailClient({
       return;
     }
     setNewTaskTitle("");
+    router.refresh();
   }
 
   async function handleToggleTask(id: string) {
     await toggleTask(id, project.id);
+    router.refresh();
   }
 
   async function handleDeleteTask(id: string) {
     await removeTask(id, project.id);
     toast.success("Task removed");
+    router.refresh();
   }
 
   return (

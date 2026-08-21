@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -42,6 +43,7 @@ function toDefaults(resource?: Resource): ResourceInput {
 }
 
 export function ResourceDialog({ open, onOpenChange, resource }: ResourceDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<ResourceInput>({
     resolver: zodResolver(resourceSchema),
@@ -57,6 +59,7 @@ export function ResourceDialog({ open, onOpenChange, resource }: ResourceDialogP
       return;
     }
     toast.success(resource ? "Resource updated" : "Resource saved");
+    router.refresh();
     onOpenChange(false);
     if (!resource) reset(toDefaults(undefined));
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -50,6 +51,7 @@ function toDefaults(milestone?: Milestone): MilestoneInput {
 }
 
 export function MilestoneDialog({ open, onOpenChange, milestone, experiences }: MilestoneDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<MilestoneInput>({
     resolver: zodResolver(milestoneSchema),
@@ -65,6 +67,7 @@ export function MilestoneDialog({ open, onOpenChange, milestone, experiences }: 
       return;
     }
     toast.success(milestone ? "Milestone updated" : "Milestone added");
+    router.refresh();
     onOpenChange(false);
     if (!milestone) reset(toDefaults(undefined));
   }

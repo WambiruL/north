@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -41,6 +42,7 @@ function toDefaults(visionItem?: VisionItem): VisionItemInput {
 }
 
 export function VisionItemDialog({ open, onOpenChange, visionItem, dreams }: VisionItemDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<VisionItemInput>({
     resolver: zodResolver(visionItemSchema),
@@ -56,6 +58,7 @@ export function VisionItemDialog({ open, onOpenChange, visionItem, dreams }: Vis
       return;
     }
     toast.success(visionItem ? "Vision item updated" : "Added to vision board");
+    router.refresh();
     onOpenChange(false);
     if (!visionItem) reset(toDefaults(undefined));
   }

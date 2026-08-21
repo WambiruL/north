@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -61,6 +62,7 @@ export function TransactionDialog({
   accounts,
   workProjects,
 }: TransactionDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<TransactionInput>({
     resolver: zodResolver(transactionSchema) as unknown as Resolver<TransactionInput>,
@@ -76,6 +78,7 @@ export function TransactionDialog({
       return;
     }
     toast.success(transaction ? "Transaction updated" : "Transaction logged");
+    router.refresh();
     onOpenChange(false);
     if (!transaction) reset(toDefaults(undefined, accounts[0]?.id));
   }

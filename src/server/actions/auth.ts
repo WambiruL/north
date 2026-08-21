@@ -14,21 +14,23 @@ import {
 } from "@/lib/validation/auth";
 
 export type ActionResult = { error: string } | { error?: undefined };
+export type SignUpResult = ActionResult | { needsConfirmation: true; error?: undefined };
 
-export async function signUp(input: SignUpInput): Promise<ActionResult> {
+export async function signUp(input: SignUpInput): Promise<SignUpResult> {
   const parsed = signUpSchema.safeParse(input);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: { data: { full_name: parsed.data.fullName } },
   });
 
   if (error) return { error: error.message };
+  if (!data.session) return { needsConfirmation: true };
   redirect("/dashboard");
 }
 

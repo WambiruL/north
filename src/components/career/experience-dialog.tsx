@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -66,6 +67,7 @@ export function ExperienceDialog({
   skills,
   onSkillCreated,
 }: ExperienceDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [pickerValue, setPickerValue] = useState<string | undefined>(undefined);
   const { register, handleSubmit, control, watch, setValue, reset } = useForm<ExperienceInput>({
@@ -85,6 +87,7 @@ export function ExperienceDialog({
       return;
     }
     toast.success(experience ? "Experience updated" : "Experience added");
+    router.refresh();
     onOpenChange(false);
     if (!experience) {
       reset(toDefaults(undefined));

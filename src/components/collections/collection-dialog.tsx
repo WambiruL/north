@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -45,6 +46,7 @@ function toDefaults(collection?: Collection): CollectionFormValues {
 }
 
 export function CollectionDialog({ open, onOpenChange, collection }: CollectionDialogProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<CollectionFormValues>({
     resolver: zodResolver(collectionSchema),
@@ -67,6 +69,7 @@ export function CollectionDialog({ open, onOpenChange, collection }: CollectionD
       return;
     }
     toast.success(collection ? "Collection updated" : "Collection created");
+    router.refresh();
     onOpenChange(false);
     if (!collection) reset(toDefaults(undefined));
   }

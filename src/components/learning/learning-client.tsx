@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Pencil, Trash2, ExternalLink } from "lucide-react";
 import type { Tables } from "@/types/database.types";
@@ -43,6 +44,7 @@ export function LearningClient({
   resources: Resource[];
   skills: Skill[];
 }) {
+  const router = useRouter();
   // Skills created via the picker mid-dialog are merged in immediately for
   // instant UI feedback, ahead of the server revalidation that will
   // eventually fold them into `skillsProp` for good.
@@ -74,6 +76,7 @@ export function LearningClient({
   async function handleDeletePath(id: string) {
     await removeLearningPath(id);
     toast.success("Learning path removed");
+    router.refresh();
   }
 
   function openNewCourse() {
@@ -87,6 +90,7 @@ export function LearningClient({
   async function handleDeleteCourse(id: string) {
     await removeCourse(id);
     toast.success("Course removed");
+    router.refresh();
   }
 
   function openNewResource() {
@@ -100,6 +104,7 @@ export function LearningClient({
   async function handleDeleteResource(id: string) {
     await removeResource(id);
     toast.success("Resource removed");
+    router.refresh();
   }
 
   function renderCourseList(list: Course[]) {
