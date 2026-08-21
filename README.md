@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# North
 
-## Getting Started
+North is a personal life-operating-system: one app for check-ins, notes,
+collections, career, learning, work, finances, hobbies, creative projects,
+and the life you're building toward — with real relationships between them
+instead of disconnected mini-apps.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 (App Router, Turbopack) + TypeScript + React 19
+- Tailwind CSS v4 with a warm/editorial design system (see `/design-system`)
+- Supabase: Postgres (RLS on every table), Auth, Storage
+- Zod + React Hook Form for validated forms
+- Vitest for tests
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Environment variables live in `.env.local` (Supabase URL + publishable key —
+already present for the `north` Supabase project). The database schema,
+storage buckets, and RLS policies are managed directly in Supabase via SQL
+migrations (see the Supabase project's migration history), not through a
+local ORM migration tool.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```text
+src/
+├── app/
+│   ├── (auth)/          sign-in, sign-up, password reset
+│   ├── (app)/            authenticated shell: dashboard, check-ins, notes,
+│   │                     collections, career, learning, work, finances,
+│   │                     hobbies, creative-studio, dream-life, settings,
+│   │                     design-system
+├── components/
+│   ├── ui/               shared primitives (Button, Card, Dialog, ...)
+│   ├── navigation/        sidebar, mobile nav, global search, quick create
+│   └── <module>/          domain components per life module
+├── lib/                  supabase clients, zod schemas, constants, utils
+├── server/actions/        "use server" actions (validate → service → db)
+├── services/              data-access functions per domain
+└── types/                 generated Supabase types
+```
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev` — start the dev server
+- `npm run build` — production build
+- `npm run lint` — ESLint
+- `npm run test` — Vitest

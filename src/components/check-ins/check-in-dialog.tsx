@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { checkInSchema, type CheckInInput } from "@/lib/validation/check-ins";
+import {
+  checkInSchema,
+  type CheckInInput,
+  type CheckInFormInput,
+} from "@/lib/validation/check-ins";
 import { saveCheckIn } from "@/server/actions/check-ins";
 import { pickReflectionPrompt } from "@/lib/constants/reflection-prompts";
 import type { Tables } from "@/types/database.types";
@@ -56,7 +60,11 @@ function toDefaults(checkIn?: CheckIn): CheckInInput {
 
 export function CheckInDialog({ open, onOpenChange, checkIn }: CheckInDialogProps) {
   const [submitting, setSubmitting] = useState(false);
-  const { register, handleSubmit, control, reset } = useForm<CheckInInput>({
+  const { register, handleSubmit, control, reset } = useForm<
+    CheckInFormInput,
+    unknown,
+    CheckInInput
+  >({
     resolver: zodResolver(checkInSchema),
     values: toDefaults(checkIn),
   });
