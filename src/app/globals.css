@@ -1,26 +1,146 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------
+ * North design tokens — extracted from the North Design System artifact.
+ * Light values live on bare :root; dark values are layered on twice so
+ * both an explicit toggle (data-theme) and prefers-color-scheme work.
+ * ------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --bg: #f2e8d6;
+  --surface: #fff9ef;
+  --surface-2: #fff3e1;
+  --raise: #fffdf8;
+  --ink: #001524;
+  --muted: rgba(0, 21, 36, 0.58);
+  --faint: rgba(0, 21, 36, 0.38);
+  --line: rgba(120, 41, 15, 0.16);
+  --line-2: rgba(120, 41, 15, 0.1);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --nav: #001524;
+  --nav-ink: #ffecd1;
+  --nav-muted: rgba(255, 236, 209, 0.56);
+  --nav-line: rgba(255, 236, 209, 0.12);
+
+  --teal: #15616d;
+  --teal-soft: rgba(21, 97, 109, 0.12);
+  --amber: #ff7d00;
+  --amber-soft: rgba(255, 125, 0, 0.14);
+  --mahogany: #78290f;
+  --mahogany-soft: rgba(120, 41, 15, 0.1);
+
+  --shadow-sm: 0 1px 1px rgba(0, 21, 36, 0.035);
+  --shadow-md: 0 6px 20px rgba(0, 21, 36, 0.07);
+  --shadow-hero: 0 28px 64px rgba(0, 21, 36, 0.2);
+
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --bg: #001524;
+    --surface: #04202c;
+    --surface-2: #062836;
+    --raise: #08303f;
+    --ink: #ffecd1;
+    --muted: rgba(255, 236, 209, 0.62);
+    --faint: rgba(255, 236, 209, 0.38);
+    --line: rgba(255, 236, 209, 0.13);
+    --line-2: rgba(255, 236, 209, 0.08);
+
+    --nav: #000e17;
+    --nav-muted: rgba(255, 236, 209, 0.52);
+    --nav-line: rgba(255, 236, 209, 0.1);
+
+    --teal-soft: rgba(21, 97, 109, 0.28);
+    --amber-soft: rgba(255, 125, 0, 0.16);
+    --mahogany-soft: rgba(255, 236, 209, 0.06);
+
+    --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.22);
+    --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.3);
+    --shadow-hero: 0 28px 64px rgba(0, 0, 0, 0.42);
   }
 }
 
+:root[data-theme="dark"] {
+  --bg: #001524;
+  --surface: #04202c;
+  --surface-2: #062836;
+  --raise: #08303f;
+  --ink: #ffecd1;
+  --muted: rgba(255, 236, 209, 0.62);
+  --faint: rgba(255, 236, 209, 0.38);
+  --line: rgba(255, 236, 209, 0.13);
+  --line-2: rgba(255, 236, 209, 0.08);
+
+  --nav: #000e17;
+  --nav-muted: rgba(255, 236, 209, 0.52);
+  --nav-line: rgba(255, 236, 209, 0.1);
+
+  --teal-soft: rgba(21, 97, 109, 0.28);
+  --amber-soft: rgba(255, 125, 0, 0.16);
+  --mahogany-soft: rgba(255, 236, 209, 0.06);
+
+  --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.22);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.3);
+  --shadow-hero: 0 28px 64px rgba(0, 0, 0, 0.42);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-raise: var(--raise);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+
+  --color-nav: var(--nav);
+  --color-nav-ink: var(--nav-ink);
+  --color-nav-muted: var(--nav-muted);
+  --color-nav-line: var(--nav-line);
+
+  --color-teal: var(--teal);
+  --color-teal-soft: var(--teal-soft);
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+  --color-mahogany: var(--mahogany);
+  --color-mahogany-soft: var(--mahogany-soft);
+
+  --shadow-north-sm: var(--shadow-sm);
+  --shadow-north-md: var(--shadow-md);
+  --shadow-north-hero: var(--shadow-hero);
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

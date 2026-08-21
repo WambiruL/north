@@ -1,0 +1,27 @@
+import { redirect } from "next/navigation";
+import { getCurrentUserAndProfile } from "@/services/profile";
+import { Sidebar } from "@/components/navigation/sidebar";
+import { MobileNav } from "@/components/navigation/mobile-nav";
+import { Topbar } from "@/components/navigation/topbar";
+
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const session = await getCurrentUserAndProfile();
+  if (!session) redirect("/sign-in");
+
+  const { profile, user } = session;
+
+  return (
+    <div className="flex min-h-screen bg-bg">
+      <Sidebar
+        fullName={profile?.full_name || user.email?.split("@")[0] || "You"}
+        city={profile?.city ?? null}
+        avatarUrl={profile?.avatar_url ?? null}
+      />
+      <div className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">
+        <Topbar />
+        <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
+      </div>
+      <MobileNav />
+    </div>
+  );
+}
