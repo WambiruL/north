@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { profileSchema, type ProfileInput } from "@/lib/validation/settings";
+import { profileSchema, type ProfileInput, CURRENCIES } from "@/lib/validation/settings";
 import { updateProfile } from "@/server/actions/settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Controller } from "react-hook-form";
 import type { Tables } from "@/types/database.types";
 
 export function ProfileForm({ profile }: { profile: Tables<"profiles"> }) {
@@ -18,12 +20,15 @@ export function ProfileForm({ profile }: { profile: Tables<"profiles"> }) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<ProfileInput>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       fullName: profile.full_name,
+      headline: profile.headline ?? "",
       city: profile.city ?? "",
+      currency: profile.currency,
       timezone: profile.timezone,
     },
   });
@@ -42,20 +47,49 @@ export function ProfileForm({ profile }: { profile: Tables<"profiles"> }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="fullName">Name</Label>
-        <Input id="fullName" {...register("fullName")} />
-        {errors.fullName && <p className="text-[12px] text-mahogany">{errors.fullName.message}</p>}
-      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="fullName">Name</Label>
+          <Input id="fullName" {...register("fullName")} />
+          {errors.fullName && <p className="text-[12px] text-mahogany">{errors.fullName.message}</p>}
+        </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="city">City</Label>
-        <Input id="city" placeholder="Lisbon" {...register("city")} />
-      </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="headline">What you do</Label>
+          <Input id="headline" placeholder="Product designer, going independent" {...register("headline")} />
+        </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="timezone">Timezone</Label>
-        <Input id="timezone" placeholder="Europe/Lisbon" {...register("timezone")} />
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="city">City</Label>
+          <Input id="city" placeholder="Lisbon" {...register("city")} />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="currency">Currency</Label>
+          <Controller
+            control={control}
+            name="currency"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="currency">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="timezone">Timezone</Label>
+          <Input id="timezone" placeholder="Europe/Lisbon" {...register("timezone")} />
+        </div>
       </div>
 
       <Button type="submit" variant="accent" disabled={submitting} className="self-start">

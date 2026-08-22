@@ -7,5 +7,14 @@ export default async function RootPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  redirect(user ? "/dashboard" : "/sign-in");
+  if (!user) redirect("/sign-in");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("preferences")
+    .eq("id", user.id)
+    .single();
+
+  const preferences = profile?.preferences as { openCheckInAfterSignIn?: boolean } | null;
+  redirect(preferences?.openCheckInAfterSignIn ? "/check-ins" : "/dashboard");
 }

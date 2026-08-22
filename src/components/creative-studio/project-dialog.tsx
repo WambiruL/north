@@ -35,6 +35,8 @@ function toDefaults(project?: CreativeProject): CreativeProjectInput {
     description: project?.description ?? undefined,
     status: (project?.status as CreativeProjectInput["status"]) ?? "active",
     coverUrl: project?.cover_url ?? undefined,
+    tools: project?.tools ?? undefined,
+    linkUrl: project?.link_url ?? undefined,
   };
 }
 
@@ -100,6 +102,16 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="coverUrl">Cover image URL</Label>
             <Input id="coverUrl" placeholder="Paste an image URL" {...register("coverUrl")} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="tools">Made with</Label>
+            <Input id="tools" placeholder="e.g. Watercolor, hot press paper" {...register("tools")} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="linkUrl">Link</Label>
+            <Input id="linkUrl" placeholder="Where to see the finished piece" {...register("linkUrl")} />
           </div>
 
           <DialogFooter>

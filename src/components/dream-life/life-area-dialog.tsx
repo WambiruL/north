@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { lifeAreaSchema, type LifeAreaInput } from "@/lib/validation/dream-life";
@@ -32,16 +32,18 @@ function toDefaults(lifeArea?: LifeArea): LifeAreaInput {
   if (lifeArea) {
     return {
       name: lifeArea.name,
+      question: lifeArea.question ?? undefined,
       belief: lifeArea.belief ?? undefined,
+      practices: lifeArea.practices.map((p) => p),
     };
   }
-  return { name: "", belief: "" };
+  return { name: "", question: "", belief: "", practices: [] };
 }
 
 export function LifeAreaDialog({ open, onOpenChange, lifeArea }: LifeAreaDialogProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const { register, handleSubmit, reset } = useForm<LifeAreaInput>({
+  const { register, handleSubmit, control, reset } = useForm<LifeAreaInput>({
     resolver: zodResolver(lifeAreaSchema),
     values: toDefaults(lifeArea),
   });
@@ -73,12 +75,38 @@ export function LifeAreaDialog({ open, onOpenChange, lifeArea }: LifeAreaDialogP
           </div>
 
           <div className="flex flex-col gap-1.5">
+            <Label htmlFor="question">The question you&rsquo;re answering here</Label>
+            <Input
+              id="question"
+              placeholder="What does healthy actually mean to me?"
+              {...register("question")}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="belief">What I believe, and what I will not trade</Label>
             <Textarea
               id="belief"
-              rows={5}
+              rows={4}
               placeholder="The non-negotiable truth that guides this area of your life."
               {...register("belief")}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="practices">What that means in practice</Label>
+            <Controller
+              control={control}
+              name="practices"
+              render={({ field }) => (
+                <Textarea
+                  id="practices"
+                  rows={4}
+                  placeholder={"One per line, e.g.\nMove my body most days\nSleep before midnight"}
+                  value={(field.value ?? []).join("\n")}
+                  onChange={(e) => field.onChange(e.target.value.split("\n"))}
+                />
+              )}
             />
           </div>
 

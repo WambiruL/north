@@ -1,8 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { profileSchema, type ProfileInput } from "@/lib/validation/settings";
+import {
+  profileSchema,
+  preferencesSchema,
+  type ProfileInput,
+  type PreferencesInput,
+} from "@/lib/validation/settings";
+import { updatePasswordSchema, type UpdatePasswordInput } from "@/lib/validation/auth";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -25,7 +32,9 @@ export async function updateProfile(input: ProfileInput) {
     .from("profiles")
     .update({
       full_name: parsed.data.fullName,
+      headline: parsed.data.headline || null,
       city: parsed.data.city || null,
+      currency: parsed.data.currency,
       timezone: parsed.data.timezone,
       onboarded_at: new Date().toISOString(),
     })
@@ -36,6 +45,67 @@ export async function updateProfile(input: ProfileInput) {
   revalidatePath("/settings");
   revalidatePath("/dashboard");
   return {};
+}
+
+export async function updatePreferences(input: PreferencesInput) {
+  const parsed = preferencesSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ preferences: parsed.data })
+    .eq("id", userId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  return {};
+}
+
+export async function changePassword(input: UpdatePasswordInput) {
+  const parsed = updatePasswordSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase } = await requireUser();
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  if (error) return { error: error.message };
+  return {};
+}
+
+export async function exportMyData() {
+  const { supabase, userId } = await requireUser();
+
+  const [profile, checkIns, notes, collections, collectionItems] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", userId).single(),
+    supabase.from("check_ins").select("*").eq("user_id", userId),
+    supabase.from("notes").select("*").eq("user_id", userId),
+    supabase.from("collections").select("*").eq("user_id", userId),
+    supabase.from("collection_items").select("*").eq("user_id", userId),
+  ]);
+
+  return {
+    exportedAt: new Date().toISOString(),
+    profile: profile.data,
+    checkIns: checkIns.data ?? [],
+    notes: notes.data ?? [],
+    collections: collections.data ?? [],
+    collectionItems: collectionItems.data ?? [],
+  };
+}
+
+export async function deleteMyAccount() {
+  const { supabase } = await requireUser();
+  const { error } = await supabase.rpc("delete_own_account");
+  if (error) return { error: error.message };
+  await supabase.auth.signOut();
+  redirect("/sign-in");
 }
 
 export async function updateAvatar(formData: FormData) {

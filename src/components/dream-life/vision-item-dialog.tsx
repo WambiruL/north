@@ -22,12 +22,14 @@ import {
 
 type VisionItem = Tables<"vision_items">;
 type Dream = Tables<"dreams">;
+type LifeArea = Tables<"life_areas">;
 
 export interface VisionItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   visionItem?: VisionItem;
   dreams: Dream[];
+  lifeAreas: LifeArea[];
 }
 
 function toDefaults(visionItem?: VisionItem): VisionItemInput {
@@ -36,12 +38,19 @@ function toDefaults(visionItem?: VisionItem): VisionItemInput {
       caption: visionItem.caption,
       imageUrl: visionItem.image_url ?? undefined,
       dreamId: visionItem.dream_id ?? undefined,
+      lifeAreaId: visionItem.life_area_id ?? undefined,
     };
   }
-  return { caption: "", imageUrl: "", dreamId: undefined };
+  return { caption: "", imageUrl: "", dreamId: undefined, lifeAreaId: undefined };
 }
 
-export function VisionItemDialog({ open, onOpenChange, visionItem, dreams }: VisionItemDialogProps) {
+export function VisionItemDialog({
+  open,
+  onOpenChange,
+  visionItem,
+  dreams,
+  lifeAreas,
+}: VisionItemDialogProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, control, reset } = useForm<VisionItemInput>({
@@ -72,38 +81,70 @@ export function VisionItemDialog({ open, onOpenChange, visionItem, dreams }: Vis
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" noValidate>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="imageUrl">Image URL</Label>
-            <Input id="imageUrl" placeholder="Paste an image URL" {...register("imageUrl")} />
+            <Input id="imageUrl" placeholder="Paste an image URL, or leave blank for a words/quote card" {...register("imageUrl")} />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="caption">Caption</Label>
-            <Input id="caption" placeholder="What this image means to you" {...register("caption")} />
+            <Input
+              id="caption"
+              placeholder="What this means to you — or the words/quote itself"
+              {...register("caption")}
+            />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="dreamId">Linked dream</Label>
-            <Controller
-              control={control}
-              name="dreamId"
-              render={({ field }) => (
-                <Select
-                  value={field.value ?? "none"}
-                  onValueChange={(v) => field.onChange(v === "none" ? undefined : v)}
-                >
-                  <SelectTrigger id="dreamId">
-                    <SelectValue placeholder="None" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {dreams.map((dream) => (
-                      <SelectItem key={dream.id} value={dream.id}>
-                        {dream.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="dreamId">Linked dream</Label>
+              <Controller
+                control={control}
+                name="dreamId"
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? "none"}
+                    onValueChange={(v) => field.onChange(v === "none" ? undefined : v)}
+                  >
+                    <SelectTrigger id="dreamId">
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {dreams.map((dream) => (
+                        <SelectItem key={dream.id} value={dream.id}>
+                          {dream.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="lifeAreaId">Life area</Label>
+              <Controller
+                control={control}
+                name="lifeAreaId"
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? "none"}
+                    onValueChange={(v) => field.onChange(v === "none" ? undefined : v)}
+                  >
+                    <SelectTrigger id="lifeAreaId">
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {lifeAreas.map((area) => (
+                        <SelectItem key={area.id} value={area.id}>
+                          {area.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
           </div>
 
           <DialogFooter>

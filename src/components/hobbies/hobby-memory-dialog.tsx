@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { hobbyMemorySchema, type HobbyMemoryInput } from "@/lib/validation/hobbies";
+import {
+  hobbyMemorySchema,
+  type HobbyMemoryInput,
+  type HobbyMemoryFormInput,
+} from "@/lib/validation/hobbies";
 import { saveHobbyMemory } from "@/server/actions/hobbies";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,18 +35,18 @@ function defaults(): HobbyMemoryInput {
     caption: "",
     imageUrl: undefined,
     occurredOn: new Date().toISOString().slice(0, 10),
+    durationMinutes: undefined,
   };
 }
 
-export function HobbyMemoryDialog({
-  open,
-  onOpenChange,
-  hobbyId,
-  hobbyName,
-}: HobbyMemoryDialogProps) {
+export function HobbyMemoryDialog({ open, onOpenChange, hobbyId, hobbyName }: HobbyMemoryDialogProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const { register, handleSubmit, reset } = useForm<HobbyMemoryInput>({
+  const { register, handleSubmit, reset } = useForm<
+    HobbyMemoryFormInput,
+    unknown,
+    HobbyMemoryInput
+  >({
     resolver: zodResolver(hobbyMemorySchema),
     defaultValues: defaults(),
   });
@@ -55,7 +59,7 @@ export function HobbyMemoryDialog({
       toast.error(result.error);
       return;
     }
-    toast.success("Memory added");
+    toast.success("Moment logged");
     router.refresh();
     onOpenChange(false);
     reset(defaults());
@@ -65,7 +69,7 @@ export function HobbyMemoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add a memory</DialogTitle>
+          <DialogTitle>Log a moment</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" noValidate>
           <div className="flex flex-col gap-1.5">
@@ -73,9 +77,22 @@ export function HobbyMemoryDialog({
             <Textarea id="caption" rows={2} placeholder="What happened?" {...register("caption")} />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="occurredOn">Date</Label>
-            <Input id="occurredOn" type="date" {...register("occurredOn")} />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="occurredOn">Date</Label>
+              <Input id="occurredOn" type="date" {...register("occurredOn")} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="durationMinutes">Minutes spent</Label>
+              <Input
+                id="durationMinutes"
+                type="number"
+                min={0}
+                max={1440}
+                placeholder="Optional"
+                {...register("durationMinutes")}
+              />
+            </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -88,7 +105,7 @@ export function HobbyMemoryDialog({
               Cancel
             </Button>
             <Button type="submit" variant="accent" disabled={submitting}>
-              {submitting ? "Saving…" : "Add memory"}
+              {submitting ? "Saving…" : "Log a moment"}
             </Button>
           </DialogFooter>
         </form>

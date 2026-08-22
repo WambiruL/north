@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { goalSchema, type GoalInput } from "@/lib/validation/career";
+import { goalSchema, type GoalInput, type GoalFormInput } from "@/lib/validation/career";
 import { saveGoal } from "@/server/actions/career";
 import type { Tables } from "@/types/database.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
@@ -36,18 +37,32 @@ function toDefaults(goal?: Goal): GoalInput {
       description: goal.description ?? undefined,
       targetDate: goal.target_date ?? undefined,
       status: (goal.status as GoalInput["status"]) ?? "active",
+      progress: goal.progress,
+      nextStep: goal.next_step ?? undefined,
     };
   }
-  return { title: "", description: undefined, targetDate: undefined, status: "active" };
+  return {
+    title: "",
+    description: undefined,
+    targetDate: undefined,
+    status: "active",
+    progress: 0,
+    nextStep: undefined,
+  };
 }
 
 export function GoalDialog({ open, onOpenChange, goal }: GoalDialogProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const { register, handleSubmit, control, reset } = useForm<GoalInput>({
+  const { register, handleSubmit, control, watch, reset } = useForm<
+    GoalFormInput,
+    unknown,
+    GoalInput
+  >({
     resolver: zodResolver(goalSchema),
     values: toDefaults(goal),
   });
+  const progress = Number(watch("progress")) || 0;
 
   async function onSubmit(values: GoalInput) {
     setSubmitting(true);
@@ -98,8 +113,17 @@ export function GoalDialog({ open, onOpenChange, goal }: GoalDialogProps) {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="progress">Progress ({progress}%)</Label>
+            <Input id="progress" type="number" min="0" max="100" {...register("progress")} />
+            <Progress value={progress} className="mt-1" />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="description">Why this matters</Label>
             <Textarea id="description" rows={3} {...register("description")} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="nextStep">Next step</Label>
+            <Input id="nextStep" placeholder="Pitch the idea to my manager" {...register("nextStep")} />
           </div>
 
           <DialogFooter>

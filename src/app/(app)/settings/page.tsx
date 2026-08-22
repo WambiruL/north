@@ -4,22 +4,34 @@ import { getCurrentUserAndProfile } from "@/services/profile";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { AvatarUpload } from "@/components/settings/avatar-upload";
-import { ThemeToggle } from "@/components/settings/theme-toggle";
-import { signOut } from "@/server/actions/auth";
-import { Button } from "@/components/ui/button";
+import { AppearanceCard } from "@/components/settings/appearance-card";
+import { PreferencesCard } from "@/components/settings/preferences-card";
+import { AccountCard } from "@/components/settings/account-card";
+import type { PreferencesInput } from "@/lib/validation/settings";
 
 export const metadata: Metadata = { title: "Settings" };
+
+const DEFAULT_PREFERENCES: PreferencesInput = {
+  reduceMotion: false,
+  openCheckInAfterSignIn: false,
+  showSeasonCard: true,
+};
 
 export default async function SettingsPage() {
   const session = await getCurrentUserAndProfile();
   if (!session) redirect("/sign-in");
   const { user, profile } = session;
 
+  const preferences: PreferencesInput = {
+    ...DEFAULT_PREFERENCES,
+    ...(profile?.preferences as Partial<PreferencesInput> | undefined),
+  };
+
   return (
     <div className="flex max-w-2xl flex-col gap-6">
       <div>
         <h1 className="text-[38px] font-bold tracking-tight text-ink">Settings</h1>
-        <p className="mt-1 text-[13.5px] text-muted">Your account, your appearance, your call.</p>
+        <p className="mt-1 text-[13.5px] text-muted">Your account, and how North behaves.</p>
       </div>
 
       <Card>
@@ -32,30 +44,9 @@ export default async function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Account</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-1">
-          <span className="text-[13.5px] text-muted">Signed in as</span>
-          <span className="text-[14px] font-semibold text-ink">{user.email}</span>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Appearance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ThemeToggle />
-        </CardContent>
-      </Card>
-
-      <form action={signOut} className="self-start">
-        <Button type="submit" variant="outline">
-          Sign out
-        </Button>
-      </form>
+      <AppearanceCard />
+      <PreferencesCard preferences={preferences} />
+      <AccountCard email={user.email ?? ""} />
     </div>
   );
 }

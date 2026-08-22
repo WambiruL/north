@@ -26,6 +26,11 @@ export async function createSkill(supabase: Client, userId: string, input: Skill
       name: input.name,
       category: input.category ?? null,
       proficiency: input.proficiency ?? 1,
+      level_label: input.levelLabel ?? null,
+      next_step: input.nextStep ?? null,
+      evidence: input.evidence ?? null,
+      hours_logged: input.hoursLogged ?? 0,
+      growth_steps: input.growthSteps ?? [],
     })
     .select()
     .single();
@@ -54,6 +59,11 @@ export async function updateSkill(supabase: Client, userId: string, id: string, 
       name: input.name,
       category: input.category ?? null,
       proficiency: input.proficiency ?? 1,
+      level_label: input.levelLabel ?? null,
+      next_step: input.nextStep ?? null,
+      evidence: input.evidence ?? null,
+      hours_logged: input.hoursLogged ?? 0,
+      growth_steps: input.growthSteps ?? [],
     })
     .eq("id", id)
     .eq("user_id", userId)
@@ -67,4 +77,15 @@ export async function updateSkill(supabase: Client, userId: string, id: string, 
 export async function deleteSkill(supabase: Client, userId: string, id: string) {
   const { error } = await supabase.from("skills").delete().eq("id", id).eq("user_id", userId);
   if (error) throw new Error(error.message);
+}
+
+/** Groups skills by their category label for grouped displays (Learning's skill map). */
+export function groupSkillsByCategory<T extends { category: string | null }>(skills: T[]) {
+  const groups = new Map<string, T[]>();
+  for (const skill of skills) {
+    const key = skill.category?.trim() || "General";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(skill);
+  }
+  return Array.from(groups.entries()).map(([category, items]) => ({ category, items }));
 }

@@ -68,17 +68,18 @@ export function CollectionDialog({ open, onOpenChange, collection }: CollectionD
       toast.error(result.error);
       return;
     }
-    toast.success(collection ? "Collection updated" : "Collection created");
-    router.refresh();
+    toast.success(collection ? "List updated" : "List created");
     onOpenChange(false);
     if (!collection) reset(toDefaults(undefined));
+    if (result.id) router.push(`/collections/${result.id}`);
+    router.refresh();
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{collection ? "Edit collection" : "New collection"}</DialogTitle>
+          <DialogTitle>{collection ? "Edit list" : "New list"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" noValidate>
           <div className="flex flex-col gap-1.5">
@@ -130,7 +131,7 @@ export function CollectionDialog({ open, onOpenChange, collection }: CollectionD
               Cancel
             </Button>
             <Button type="submit" variant="accent" disabled={submitting}>
-              {submitting ? "Saving…" : collection ? "Save changes" : "Create collection"}
+              {submitting ? "Saving…" : collection ? "Save changes" : "Create list"}
             </Button>
           </DialogFooter>
         </form>

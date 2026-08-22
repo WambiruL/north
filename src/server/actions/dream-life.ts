@@ -5,12 +5,18 @@ import { createClient } from "@/lib/supabase/server";
 import {
   lifeAreaSchema,
   dreamSchema,
-  dreamGoalSchema,
   visionItemSchema,
+  futureHorizonSchema,
+  bucketListItemSchema,
+  manifestoPrincipleSchema,
+  futureLetterSchema,
   type LifeAreaInput,
   type DreamInput,
-  type DreamGoalInput,
   type VisionItemInput,
+  type FutureHorizonInput,
+  type BucketListItemInput,
+  type ManifestoPrincipleInput,
+  type FutureLetterInput,
 } from "@/lib/validation/dream-life";
 import * as dreamLifeService from "@/services/dream-life";
 
@@ -83,42 +89,6 @@ export async function removeDream(id: string) {
   revalidatePath("/dream-life");
 }
 
-// ---------- dream goals ----------
-
-export async function saveDreamGoal(input: DreamGoalInput, id?: string) {
-  const parsed = dreamGoalSchema.safeParse(input);
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-  }
-
-  const { supabase, userId } = await requireUser();
-
-  try {
-    if (id) {
-      await dreamLifeService.updateDreamGoal(supabase, userId, id, parsed.data);
-    } else {
-      await dreamLifeService.createDreamGoal(supabase, userId, parsed.data);
-    }
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : "Something went wrong" };
-  }
-
-  revalidatePath("/dream-life");
-  return {};
-}
-
-export async function toggleDreamGoalDone(id: string, isDone: boolean) {
-  const { supabase, userId } = await requireUser();
-  await dreamLifeService.setDreamGoalDone(supabase, userId, id, isDone);
-  revalidatePath("/dream-life");
-}
-
-export async function removeDreamGoal(id: string) {
-  const { supabase, userId } = await requireUser();
-  await dreamLifeService.deleteDreamGoal(supabase, userId, id);
-  revalidatePath("/dream-life");
-}
-
 // ---------- vision items ----------
 
 export async function saveVisionItem(input: VisionItemInput, id?: string) {
@@ -146,5 +116,125 @@ export async function saveVisionItem(input: VisionItemInput, id?: string) {
 export async function removeVisionItem(id: string) {
   const { supabase, userId } = await requireUser();
   await dreamLifeService.deleteVisionItem(supabase, userId, id);
+  revalidatePath("/dream-life");
+}
+
+// ---------- future timeline (horizons) ----------
+
+export async function saveFutureHorizon(input: FutureHorizonInput, id?: string) {
+  const parsed = futureHorizonSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  try {
+    if (id) {
+      await dreamLifeService.updateFutureHorizon(supabase, userId, id, parsed.data);
+    } else {
+      await dreamLifeService.createFutureHorizon(supabase, userId, parsed.data);
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+
+  revalidatePath("/dream-life");
+  return {};
+}
+
+export async function removeFutureHorizon(id: string) {
+  const { supabase, userId } = await requireUser();
+  await dreamLifeService.deleteFutureHorizon(supabase, userId, id);
+  revalidatePath("/dream-life");
+}
+
+// ---------- bucket list ----------
+
+export async function saveBucketListItem(input: BucketListItemInput, id?: string) {
+  const parsed = bucketListItemSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  try {
+    if (id) {
+      await dreamLifeService.updateBucketListItem(supabase, userId, id, parsed.data);
+    } else {
+      await dreamLifeService.createBucketListItem(supabase, userId, parsed.data);
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+
+  revalidatePath("/dream-life");
+  return {};
+}
+
+export async function removeBucketListItem(id: string) {
+  const { supabase, userId } = await requireUser();
+  await dreamLifeService.deleteBucketListItem(supabase, userId, id);
+  revalidatePath("/dream-life");
+}
+
+// ---------- manifesto ----------
+
+export async function saveManifestoPrinciple(input: ManifestoPrincipleInput, id?: string) {
+  const parsed = manifestoPrincipleSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  try {
+    if (id) {
+      await dreamLifeService.updateManifestoPrinciple(supabase, userId, id, parsed.data);
+    } else {
+      await dreamLifeService.createManifestoPrinciple(supabase, userId, parsed.data);
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+
+  revalidatePath("/dream-life");
+  return {};
+}
+
+export async function removeManifestoPrinciple(id: string) {
+  const { supabase, userId } = await requireUser();
+  await dreamLifeService.deleteManifestoPrinciple(supabase, userId, id);
+  revalidatePath("/dream-life");
+}
+
+// ---------- future letters (journal) ----------
+
+export async function saveFutureLetter(input: FutureLetterInput, id?: string) {
+  const parsed = futureLetterSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  try {
+    if (id) {
+      await dreamLifeService.updateFutureLetter(supabase, userId, id, parsed.data);
+    } else {
+      await dreamLifeService.createFutureLetter(supabase, userId, parsed.data);
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+
+  revalidatePath("/dream-life");
+  return {};
+}
+
+export async function removeFutureLetter(id: string) {
+  const { supabase, userId } = await requireUser();
+  await dreamLifeService.deleteFutureLetter(supabase, userId, id);
   revalidatePath("/dream-life");
 }

@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SkillPicker } from "@/components/skills/skill-picker";
 import {
   Dialog,
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 
 type Skill = Tables<"skills">;
+type Season = Tables<"career_seasons">;
 type Experience = Tables<"career_experiences"> & { skills?: Skill[] };
 
 export interface ExperienceDialogProps {
@@ -32,8 +34,11 @@ export interface ExperienceDialogProps {
   onOpenChange: (open: boolean) => void;
   experience?: Experience;
   skills: Skill[];
+  seasons: Season[];
   onSkillCreated?: (skill: Skill) => void;
 }
+
+const NONE = "__none__";
 
 function toDefaults(experience?: Experience): ExperienceInput {
   if (experience) {
@@ -46,6 +51,7 @@ function toDefaults(experience?: Experience): ExperienceInput {
       isCurrent: experience.is_current,
       narrative: experience.narrative ?? undefined,
       skillIds: (experience.skills ?? []).map((s) => s.id),
+      seasonId: experience.season_id ?? undefined,
     };
   }
   return {
@@ -57,6 +63,7 @@ function toDefaults(experience?: Experience): ExperienceInput {
     isCurrent: true,
     narrative: undefined,
     skillIds: [],
+    seasonId: undefined,
   };
 }
 
@@ -65,6 +72,7 @@ export function ExperienceDialog({
   onOpenChange,
   experience,
   skills,
+  seasons,
   onSkillCreated,
 }: ExperienceDialogProps) {
   const router = useRouter();
@@ -152,6 +160,33 @@ export function ExperienceDialog({
             />
             <span className="text-[13.5px] text-ink">This is my current role</span>
           </label>
+          {seasons.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <Label>Season</Label>
+              <Controller
+                control={control}
+                name="seasonId"
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? NONE}
+                    onValueChange={(v) => field.onChange(v === NONE ? undefined : v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE}>None</SelectItem>
+                      {seasons.map((season) => (
+                        <SelectItem key={season.id} value={season.id}>
+                          {season.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+          )}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="narrative">The story behind this role</Label>
             <Textarea

@@ -3,68 +3,96 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus } from "lucide-react";
 import type { Tables } from "@/types/database.types";
+import type { DreamWithGoals } from "@/services/dream-life";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Checkbox } from "@/components/ui/checkbox";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { LifeAreaDialog } from "@/components/dream-life/life-area-dialog";
-import { DreamDialog } from "@/components/dream-life/dream-dialog";
-import { DreamGoalDialog } from "@/components/dream-life/dream-goal-dialog";
-import { VisionItemDialog } from "@/components/dream-life/vision-item-dialog";
 import {
+  saveFutureLetter,
   removeLifeArea,
   removeDream,
-  removeDreamGoal,
   removeVisionItem,
-  toggleDreamGoalDone,
+  removeFutureHorizon,
+  removeBucketListItem,
+  removeManifestoPrinciple,
+  removeFutureLetter,
 } from "@/server/actions/dream-life";
+import { LifeAreaDialog } from "@/components/dream-life/life-area-dialog";
+import { DreamDialog } from "@/components/dream-life/dream-dialog";
+import { VisionItemDialog } from "@/components/dream-life/vision-item-dialog";
+import { FutureHorizonDialog } from "@/components/dream-life/future-horizon-dialog";
+import { BucketListDialog } from "@/components/dream-life/bucket-list-dialog";
+import { ManifestoDialog } from "@/components/dream-life/manifesto-dialog";
+import { FutureLetterDialog } from "@/components/dream-life/future-letter-dialog";
+import { VisionBoardSection } from "@/components/dream-life/vision-board-section";
+import { LifeAreasSection } from "@/components/dream-life/life-areas-section";
+import { DreamsIntoActionSection } from "@/components/dream-life/dreams-into-action-section";
+import { FutureTimelineSection } from "@/components/dream-life/future-timeline-section";
+import { BucketListSection } from "@/components/dream-life/bucket-list-section";
+import { ManifestoSection } from "@/components/dream-life/manifesto-section";
+import { JournalSection } from "@/components/dream-life/journal-section";
+import { ProgressSection } from "@/components/dream-life/progress-section";
 
 type LifeArea = Tables<"life_areas">;
-type Dream = Tables<"dreams">;
-type DreamGoal = Tables<"dream_goals">;
 type VisionItem = Tables<"vision_items">;
+type FutureHorizon = Tables<"future_horizons">;
+type BucketListItem = Tables<"bucket_list_items">;
+type ManifestoPrinciple = Tables<"manifesto_principles">;
+type FutureLetter = Tables<"future_letters">;
 
-export type DreamWithGoals = Dream & {
-  goals: DreamGoal[];
-  goalsDone: number;
-  goalsTotal: number;
-  progress: number;
-};
+const TABS = [
+  { key: "vision", label: "Vision board" },
+  { key: "areas", label: "Life areas" },
+  { key: "action", label: "Dreams into action" },
+  { key: "timeline", label: "Future timeline" },
+  { key: "bucket", label: "Bucket list" },
+  { key: "manifesto", label: "Manifesto" },
+  { key: "journal", label: "Journal" },
+  { key: "progress", label: "Progress" },
+] as const;
 
-type Horizon = "this_year" | "1_3_years" | "someday";
+type TabKey = (typeof TABS)[number]["key"];
 
-const HORIZON_TABS: { value: Horizon; label: string }[] = [
-  { value: "this_year", label: "This year" },
-  { value: "1_3_years", label: "1-3 years" },
-  { value: "someday", label: "Someday" },
+const FUTURE_PROMPTS = [
+  "Dear future me,",
+  "A note for later,",
+  "What I want you to remember,",
+  "If you're reading this,",
+  "In case you forgot,",
 ];
-
-const ASPECT_CYCLE = ["aspect-square", "aspect-[4/5]", "aspect-[4/5]", "aspect-square"];
 
 export function DreamLifeClient({
   lifeAreas,
   dreams,
   visionItems,
+  horizons,
+  bucketItems,
+  principles,
+  letters,
   autoOpen,
 }: {
   lifeAreas: LifeArea[];
   dreams: DreamWithGoals[];
   visionItems: VisionItem[];
+  horizons: FutureHorizon[];
+  bucketItems: BucketListItem[];
+  principles: ManifestoPrinciple[];
+  letters: FutureLetter[];
   autoOpen: "dream_goal" | undefined;
 }) {
   const router = useRouter();
-  // dream dialog
-  const [dreamDialogOpen, setDreamDialogOpen] = useState(autoOpen === "dream_goal" && dreams.length === 0);
-  const [editingDream, setEditingDream] = useState<Dream | undefined>(undefined);
 
-  // goal dialog
-  const [goalDialogOpen, setGoalDialogOpen] = useState(autoOpen === "dream_goal" && dreams.length > 0);
-  const [goalDialogDreamId, setGoalDialogDreamId] = useState<string | undefined>(undefined);
+  const [activeTab, setActiveTab] = useState<TabKey>(autoOpen === "dream_goal" ? "action" : "vision");
+
+  // hero compose box
+  const [letterDraft, setLetterDraft] = useState("");
+  const [savingLetter, setSavingLetter] = useState(false);
+
+  // dream dialog
+  const [dreamDialogOpen, setDreamDialogOpen] = useState(autoOpen === "dream_goal");
+  const [editingDream, setEditingDream] = useState<DreamWithGoals | undefined>(
+    autoOpen === "dream_goal" && dreams.length > 0 ? dreams[0] : undefined,
+  );
 
   // vision item dialog
   const [visionDialogOpen, setVisionDialogOpen] = useState(false);
@@ -74,379 +102,311 @@ export function DreamLifeClient({
   const [lifeAreaDialogOpen, setLifeAreaDialogOpen] = useState(false);
   const [editingLifeArea, setEditingLifeArea] = useState<LifeArea | undefined>(undefined);
 
-  const [activeHorizon, setActiveHorizon] = useState<Horizon>("this_year");
+  // future horizon dialog
+  const [horizonDialogOpen, setHorizonDialogOpen] = useState(false);
+  const [editingHorizon, setEditingHorizon] = useState<FutureHorizon | undefined>(undefined);
 
-  const lifeAreaById = useMemo(() => {
+  // bucket list dialog
+  const [bucketDialogOpen, setBucketDialogOpen] = useState(false);
+  const [editingBucketItem, setEditingBucketItem] = useState<BucketListItem | undefined>(undefined);
+
+  // manifesto dialog
+  const [manifestoDialogOpen, setManifestoDialogOpen] = useState(false);
+  const [editingPrinciple, setEditingPrinciple] = useState<ManifestoPrinciple | undefined>(undefined);
+
+  // future letter dialog (used from the Journal tab's own add button)
+  const [letterDialogOpen, setLetterDialogOpen] = useState(false);
+  const [editingLetter, setEditingLetter] = useState<FutureLetter | undefined>(undefined);
+
+  const lifeAreasById = useMemo(() => {
     const map = new Map<string, LifeArea>();
     for (const area of lifeAreas) map.set(area.id, area);
     return map;
   }, [lifeAreas]);
 
-  const dreamsByHorizon = useMemo(() => {
-    const grouped: Record<Horizon, DreamWithGoals[]> = { this_year: [], "1_3_years": [], someday: [] };
-    for (const dream of dreams) {
-      const h = (dream.horizon as Horizon) ?? "someday";
-      (grouped[h] ?? grouped.someday).push(dream);
-    }
-    return grouped;
-  }, [dreams]);
+  const futureHint = useMemo(() => {
+    if (letters.length === 0) return "Nothing written yet. Start with one line.";
+    const s = letters.length === 1 ? "" : "s";
+    return `${letters.length} letter${s} written to your future self so far`;
+  }, [letters.length]);
 
-  const timeline = useMemo(() => {
-    const entries: { id: string; date: string; title: string; description: string | null; dreamTitle: string }[] = [];
-    for (const dream of dreams) {
-      for (const goal of dream.goals) {
-        if (goal.target_date) {
-          entries.push({
-            id: goal.id,
-            date: goal.target_date,
-            title: goal.title,
-            description: dream.description,
-            dreamTitle: dream.title,
-          });
-        }
-      }
-    }
-    return entries.sort((a, b) => a.date.localeCompare(b.date));
-  }, [dreams]);
-
+  // ---- open helpers ----
   function openNewDream() {
     setEditingDream(undefined);
     setDreamDialogOpen(true);
   }
-
-  function openEditDream(dream: Dream) {
+  function openEditDream(dream: DreamWithGoals) {
     setEditingDream(dream);
     setDreamDialogOpen(true);
   }
-
-  function openNewGoal(dreamId?: string) {
-    setGoalDialogDreamId(dreamId);
-    setGoalDialogOpen(true);
-  }
-
   function openNewVisionItem() {
     setEditingVisionItem(undefined);
     setVisionDialogOpen(true);
   }
-
   function openEditVisionItem(item: VisionItem) {
     setEditingVisionItem(item);
     setVisionDialogOpen(true);
   }
-
   function openNewLifeArea() {
     setEditingLifeArea(undefined);
     setLifeAreaDialogOpen(true);
   }
-
   function openEditLifeArea(area: LifeArea) {
     setEditingLifeArea(area);
     setLifeAreaDialogOpen(true);
   }
+  function openNewHorizon() {
+    setEditingHorizon(undefined);
+    setHorizonDialogOpen(true);
+  }
+  function openEditHorizon(h: FutureHorizon) {
+    setEditingHorizon(h);
+    setHorizonDialogOpen(true);
+  }
+  function openNewBucketItem() {
+    setEditingBucketItem(undefined);
+    setBucketDialogOpen(true);
+  }
+  function openEditBucketItem(item: BucketListItem) {
+    setEditingBucketItem(item);
+    setBucketDialogOpen(true);
+  }
+  function openNewPrinciple() {
+    setEditingPrinciple(undefined);
+    setManifestoDialogOpen(true);
+  }
+  function openEditPrinciple(p: ManifestoPrinciple) {
+    setEditingPrinciple(p);
+    setManifestoDialogOpen(true);
+  }
+  function openNewLetter() {
+    setEditingLetter(undefined);
+    setLetterDialogOpen(true);
+  }
+  function openEditLetter(letter: FutureLetter) {
+    setEditingLetter(letter);
+    setLetterDialogOpen(true);
+  }
 
+  // ---- delete helpers ----
   async function handleDeleteDream(id: string) {
     await removeDream(id);
     toast.success("Dream removed");
     router.refresh();
   }
-
   async function handleDeleteVisionItem(id: string) {
     await removeVisionItem(id);
     toast.success("Removed from vision board");
     router.refresh();
   }
-
   async function handleDeleteLifeArea(id: string) {
     await removeLifeArea(id);
     toast.success("Life area removed");
     router.refresh();
   }
-
-  async function handleDeleteGoal(id: string) {
-    await removeDreamGoal(id);
-    toast.success("Goal removed");
+  async function handleDeleteHorizon(id: string) {
+    await removeFutureHorizon(id);
+    toast.success("Horizon removed");
+    router.refresh();
+  }
+  async function handleDeleteBucketItem(id: string) {
+    await removeBucketListItem(id);
+    toast.success("Removed from the list");
+    router.refresh();
+  }
+  async function handleDeletePrinciple(id: string) {
+    await removeManifestoPrinciple(id);
+    toast.success("Principle removed");
+    router.refresh();
+  }
+  async function handleDeleteLetter(id: string) {
+    await removeFutureLetter(id);
+    toast.success("Letter removed");
     router.refresh();
   }
 
-  async function handleToggleGoal(goal: DreamGoal) {
-    await toggleDreamGoalDone(goal.id, !goal.is_done);
+  async function handleSaveLetter() {
+    const body = letterDraft.trim();
+    if (!body) return;
+    setSavingLetter(true);
+    const prompt = FUTURE_PROMPTS[letters.length % FUTURE_PROMPTS.length];
+    const result = await saveFutureLetter({ prompt, body });
+    setSavingLetter(false);
+    if (result?.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Saved to your future self");
+    setLetterDraft("");
     router.refresh();
   }
 
   return (
-    <div className="flex flex-col gap-14">
-      <div>
-        <h1 className="text-[38px] font-bold tracking-tight text-ink">Dream Life</h1>
-        <p className="mt-1 text-[13.5px] text-muted">The life I am building.</p>
+    <div className="flex flex-col gap-8">
+      <div className="relative overflow-hidden rounded-[30px] bg-nav p-11 text-nav-ink">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-52 -top-44 h-[620px] w-[620px] rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(255,125,0,.26), transparent 66%)" }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-64 -left-40 h-[520px] w-[520px] rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(21,97,109,.5), transparent 68%)" }}
+        />
+
+        <div className="relative grid items-center gap-11 md:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="min-w-0">
+            <div className="mb-[18px] text-[11px] font-extrabold uppercase tracking-[.18em] text-nav-muted">
+              My north star
+            </div>
+            <h1 className="mb-[22px] max-w-[14em] text-[42px] font-extrabold leading-[1.14] tracking-tight">
+              The life I am building
+            </h1>
+            <textarea
+              value={letterDraft}
+              onChange={(e) => setLetterDraft(e.target.value)}
+              rows={4}
+              placeholder="Dear future me, here's where things stand…"
+              className="w-full max-w-[44em] resize-y rounded-[18px] border border-nav-line bg-[rgba(255,236,209,.08)] px-[22px] py-5 font-sans text-[18px] leading-relaxed text-nav-ink outline-none placeholder:text-nav-muted focus:border-amber"
+            />
+            <div className="mt-4 flex flex-wrap items-center gap-4">
+              <span className="text-[12.5px] font-bold text-nav-muted">{futureHint}</span>
+              <span className="h-1 w-1 rounded-full bg-nav-muted" />
+              <span className="text-[13.5px] italic text-nav-ink">Slower, and better.</span>
+              {letterDraft.trim().length > 0 && (
+                <Button size="sm" variant="accent" onClick={handleSaveLetter} disabled={savingLetter}>
+                  {savingLetter ? "Saving…" : "Save to your future self"}
+                </Button>
+              )}
+            </div>
+          </div>
+          <div className="min-w-0">
+            <div className="flex h-[230px] items-center justify-center rounded-[22px] border border-nav-line bg-[rgba(255,236,209,.06)]">
+              <span className="text-[12px] font-bold uppercase tracking-wide text-nav-muted">
+                your future self
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative mt-[34px] flex flex-wrap gap-1.5 rounded-[20px] border border-nav-line bg-[rgba(255,236,209,.08)] p-[5px]">
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                "rounded-[14px] px-4 py-2.5 text-[13px] font-bold transition-colors",
+                activeTab === tab.key
+                  ? "bg-amber text-[#001524]"
+                  : "text-nav-muted hover:text-nav-ink",
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Vision board */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-[26px] text-ink">Vision board</h2>
-          <Button variant="secondary" size="sm" onClick={openNewVisionItem}>
-            <Plus className="h-3.5 w-3.5" /> Add image
-          </Button>
-        </div>
+      {activeTab === "vision" && (
+        <VisionBoardSection
+          visionItems={visionItems}
+          lifeAreasById={lifeAreasById}
+          onAdd={openNewVisionItem}
+          onEdit={openEditVisionItem}
+          onDelete={handleDeleteVisionItem}
+        />
+      )}
 
-        {visionItems.length === 0 ? (
-          <EmptyState
-            title="No vision board yet"
-            description="Collect the images that show, not tell, what you're building toward."
-            action={
-              <Button variant="accent" onClick={openNewVisionItem}>
-                Add your first image
-              </Button>
-            }
-          />
-        ) : (
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-            {visionItems.map((item, i) => (
-              <button
-                key={item.id}
-                onClick={() => openEditVisionItem(item)}
-                className={`group relative overflow-hidden rounded-[14px] border border-line bg-surface-2 text-left ${ASPECT_CYCLE[i % ASPECT_CYCLE.length]}`}
-              >
-                {item.image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={item.image_url} alt={item.caption} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-surface-2 text-[12px] text-faint">
-                    No image
-                  </div>
-                )}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/75 to-transparent p-3 pt-8">
-                  <p className="text-[12.5px] font-semibold text-white">{item.caption}</p>
-                </div>
-                <div
-                  role="button"
-                  tabIndex={-1}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    void handleDeleteVisionItem(item.id);
-                  }}
-                  className="absolute right-2 top-2 rounded-full bg-ink/50 p-1.5 opacity-0 transition-opacity group-hover:opacity-100"
-                  aria-label="Delete"
-                >
-                  <Trash2 className="h-3 w-3 text-white" />
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </section>
+      {activeTab === "areas" && (
+        <LifeAreasSection
+          lifeAreas={lifeAreas}
+          onAdd={openNewLifeArea}
+          onEdit={openEditLifeArea}
+          onDelete={handleDeleteLifeArea}
+        />
+      )}
 
-      {/* Dreams into action */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-[26px] text-ink">Dreams into action</h2>
-          <Button variant="secondary" size="sm" onClick={openNewDream}>
-            <Plus className="h-3.5 w-3.5" /> New dream
-          </Button>
-        </div>
+      {activeTab === "action" && (
+        <DreamsIntoActionSection
+          dreams={dreams}
+          onAdd={openNewDream}
+          onEdit={openEditDream}
+          onDelete={handleDeleteDream}
+        />
+      )}
 
-        <Tabs value={activeHorizon} onValueChange={(v) => setActiveHorizon(v as Horizon)}>
-          <TabsList>
-            {HORIZON_TABS.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value}>
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      {activeTab === "timeline" && (
+        <FutureTimelineSection
+          horizons={horizons}
+          onAdd={openNewHorizon}
+          onEdit={openEditHorizon}
+          onDelete={handleDeleteHorizon}
+        />
+      )}
 
-          {HORIZON_TABS.map((tab) => (
-            <TabsContent key={tab.value} value={tab.value}>
-              {dreamsByHorizon[tab.value].length === 0 ? (
-                <EmptyState
-                  title="No dreams yet"
-                  description="What does the life you are building actually look like? Start with one dream."
-                  action={
-                    <Button variant="accent" onClick={openNewDream}>
-                      Add a dream
-                    </Button>
-                  }
-                />
-              ) : (
-                <div className="flex flex-col gap-4">
-                  {dreamsByHorizon[tab.value].map((dream) => {
-                    const area = dream.life_area_id ? lifeAreaById.get(dream.life_area_id) : undefined;
-                    return (
-                      <Card key={dream.id} className="flex flex-col gap-4 p-5">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="text-[16px] font-bold text-ink">{dream.title}</h3>
-                              {area && <Badge variant="mahogany">{area.name}</Badge>}
-                            </div>
-                            {dream.description && (
-                              <p className="line-clamp-2 text-[13.5px] leading-relaxed text-muted">
-                                {dream.description}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex shrink-0 gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => openEditDream(dream)} aria-label="Edit">
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteDream(dream.id)}
-                              aria-label="Delete"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </div>
+      {activeTab === "bucket" && (
+        <BucketListSection
+          items={bucketItems}
+          onAdd={openNewBucketItem}
+          onEdit={openEditBucketItem}
+          onDelete={handleDeleteBucketItem}
+        />
+      )}
 
-                        {dream.goalsTotal > 0 && (
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center justify-between text-[11.5px] font-semibold text-muted">
-                              <span>
-                                {dream.goalsDone} of {dream.goalsTotal} goals done
-                              </span>
-                              <span>{dream.progress}%</span>
-                            </div>
-                            <Progress value={dream.progress} tone="amber" />
-                          </div>
-                        )}
+      {activeTab === "manifesto" && (
+        <ManifestoSection
+          principles={principles}
+          onAdd={openNewPrinciple}
+          onEdit={openEditPrinciple}
+          onDelete={handleDeletePrinciple}
+        />
+      )}
 
-                        <div className="flex flex-col gap-2">
-                          {dream.goals.map((goal) => (
-                            <label
-                              key={goal.id}
-                              className="group flex items-center gap-3 rounded-[10px] px-1 py-1 hover:bg-surface-2"
-                            >
-                              <Checkbox checked={goal.is_done} onChange={() => handleToggleGoal(goal)} />
-                              <span
-                                className={`flex-1 text-[13.5px] ${goal.is_done ? "text-faint line-through" : "text-ink"}`}
-                              >
-                                {goal.title}
-                              </span>
-                              {goal.target_date && (
-                                <span className="text-[11.5px] text-faint">{goal.target_date}</span>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteGoal(goal.id)}
-                                aria-label="Delete goal"
-                                className="text-faint opacity-0 transition-opacity hover:text-mahogany group-hover:opacity-100"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </button>
-                            </label>
-                          ))}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-fit"
-                            onClick={() => openNewGoal(dream.id)}
-                          >
-                            <Plus className="h-3 w-3" /> Add goal
-                          </Button>
-                        </div>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
-      </section>
+      {activeTab === "journal" && (
+        <JournalSection
+          letters={letters}
+          onAdd={openNewLetter}
+          onEdit={openEditLetter}
+          onDelete={handleDeleteLetter}
+        />
+      )}
 
-      {/* Future timeline */}
-      <section className="flex flex-col gap-4">
-        <h2 className="font-display text-[26px] text-ink">Future timeline</h2>
+      {activeTab === "progress" && (
+        <ProgressSection
+          dreams={dreams}
+          visionItems={visionItems}
+          letters={letters}
+          bucketItems={bucketItems}
+        />
+      )}
 
-        {timeline.length === 0 ? (
-          <EmptyState
-            title="Nothing on the timeline yet"
-            description="Give a goal a target date and it will show up here, in order."
-          />
-        ) : (
-          <div className="flex flex-col">
-            {timeline.map((entry, i) => (
-              <div key={entry.id} className="flex gap-5">
-                <div className="flex w-28 shrink-0 flex-col items-end pt-0.5 text-right">
-                  <span className="font-display text-[15px] text-ink">{entry.date}</span>
-                </div>
-                <div className="relative flex flex-col items-center">
-                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-mahogany" />
-                  {i < timeline.length - 1 && <span className="w-px flex-1 bg-line" />}
-                </div>
-                <div className="flex-1 pb-8">
-                  <p className="text-[13.5px] font-semibold text-ink">{entry.title}</p>
-                  <p className="text-[12px] text-faint">{entry.dreamTitle}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Beliefs / life areas */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-[26px] text-ink">What I believe, and what I will not trade</h2>
-          <Button variant="secondary" size="sm" onClick={openNewLifeArea}>
-            <Plus className="h-3.5 w-3.5" /> New life area
-          </Button>
-        </div>
-
-        {lifeAreas.length === 0 ? (
-          <EmptyState
-            title="No life areas yet"
-            description="Name the areas of your life that matter, and the line you won't cross for each."
-            action={
-              <Button variant="accent" onClick={openNewLifeArea}>
-                Add a life area
-              </Button>
-            }
-          />
-        ) : (
-          <div className="flex flex-col divide-y divide-line">
-            {lifeAreas.map((area) => (
-              <div key={area.id} className="group flex items-start justify-between gap-4 py-5 first:pt-0">
-                <div className="flex flex-col gap-1.5">
-                  <h3 className="font-display text-[20px] text-ink">{area.name}</h3>
-                  {area.belief && (
-                    <p className="max-w-2xl text-[14px] italic leading-relaxed text-muted">{area.belief}</p>
-                  )}
-                </div>
-                <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                  <Button variant="ghost" size="icon" onClick={() => openEditLifeArea(area)} aria-label="Edit">
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteLifeArea(area.id)}
-                    aria-label="Delete"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <DreamDialog open={dreamDialogOpen} onOpenChange={setDreamDialogOpen} dream={editingDream} lifeAreas={lifeAreas} />
-      <DreamGoalDialog
-        open={goalDialogOpen}
-        onOpenChange={setGoalDialogOpen}
-        dreams={dreams}
-        dreamId={goalDialogDreamId}
+      <DreamDialog
+        open={dreamDialogOpen}
+        onOpenChange={setDreamDialogOpen}
+        dream={editingDream}
+        lifeAreas={lifeAreas}
       />
       <VisionItemDialog
         open={visionDialogOpen}
         onOpenChange={setVisionDialogOpen}
         visionItem={editingVisionItem}
         dreams={dreams}
+        lifeAreas={lifeAreas}
       />
       <LifeAreaDialog open={lifeAreaDialogOpen} onOpenChange={setLifeAreaDialogOpen} lifeArea={editingLifeArea} />
+      <FutureHorizonDialog
+        open={horizonDialogOpen}
+        onOpenChange={setHorizonDialogOpen}
+        horizon={editingHorizon}
+      />
+      <BucketListDialog open={bucketDialogOpen} onOpenChange={setBucketDialogOpen} item={editingBucketItem} />
+      <ManifestoDialog
+        open={manifestoDialogOpen}
+        onOpenChange={setManifestoDialogOpen}
+        principle={editingPrinciple}
+      />
+      <FutureLetterDialog open={letterDialogOpen} onOpenChange={setLetterDialogOpen} letter={editingLetter} />
     </div>
   );
 }

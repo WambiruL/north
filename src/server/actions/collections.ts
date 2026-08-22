@@ -33,18 +33,20 @@ export async function saveCollection(input: CollectionInput, id?: string) {
 
   const { supabase, userId } = await requireUser();
 
+  let savedId = id;
   try {
     if (id) {
       await collectionService.updateCollection(supabase, userId, id, parsed.data);
     } else {
-      await collectionService.createCollection(supabase, userId, parsed.data);
+      const created = await collectionService.createCollection(supabase, userId, parsed.data);
+      savedId = created.id;
     }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Something went wrong" };
   }
 
-  revalidateCollections(id);
-  return {};
+  revalidateCollections(savedId);
+  return { id: savedId };
 }
 
 export async function removeCollection(id: string) {

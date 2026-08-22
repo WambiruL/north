@@ -131,6 +131,7 @@ export async function addCollectionItem(
       note: input.note || null,
       url: input.url || null,
       is_done: input.isDone,
+      priority: input.priority ?? null,
       position: count ?? 0,
     })
     .select()
@@ -153,6 +154,7 @@ export async function updateCollectionItem(
       note: input.note || null,
       url: input.url || null,
       is_done: input.isDone,
+      priority: input.priority ?? null,
     })
     .eq("id", id)
     .eq("user_id", userId)

@@ -6,9 +6,21 @@ import {
   clientSchema,
   projectSchema,
   taskSchema,
+  focusTaskSchema,
+  opportunitySchema,
+  invoiceSchema,
+  winSchema,
+  workNoteSchema,
+  contactSchema,
   type ClientInput,
   type ProjectInput,
   type TaskInput,
+  type FocusTaskInput,
+  type OpportunityInput,
+  type InvoiceInput,
+  type WinInput,
+  type WorkNoteInput,
+  type ContactInput,
 } from "@/lib/validation/work";
 import * as workService from "@/services/work";
 
@@ -46,6 +58,12 @@ export async function saveClient(input: ClientInput, id?: string) {
 
   revalidateWork();
   return {};
+}
+
+export async function removeClient(id: string) {
+  const { supabase, userId } = await requireUser();
+  await workService.deleteWorkClient(supabase, userId, id);
+  revalidateWork();
 }
 
 export async function saveProject(input: ProjectInput, id?: string) {
@@ -108,4 +126,190 @@ export async function toggleTask(id: string, workProjectId: string) {
   const { supabase, userId } = await requireUser();
   await workService.toggleTaskDone(supabase, userId, id);
   revalidateWork(workProjectId);
+}
+
+// ---------- Focus tasks (priorities + deadlines) ----------
+
+export async function saveFocusTask(input: FocusTaskInput, id?: string) {
+  const parsed = focusTaskSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  try {
+    if (id) {
+      await workService.updateFocusTask(supabase, userId, id, parsed.data);
+    } else {
+      await workService.createFocusTask(supabase, userId, parsed.data);
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+
+  revalidateWork();
+  return {};
+}
+
+export async function toggleFocusTask(id: string) {
+  const { supabase, userId } = await requireUser();
+  await workService.toggleTaskDone(supabase, userId, id);
+  revalidateWork();
+}
+
+export async function removeFocusTask(id: string) {
+  const { supabase, userId } = await requireUser();
+  await workService.deleteTask(supabase, userId, id);
+  revalidateWork();
+}
+
+// ---------- Opportunities ----------
+
+export async function saveOpportunity(input: OpportunityInput, id?: string) {
+  const parsed = opportunitySchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  try {
+    if (id) {
+      await workService.updateOpportunity(supabase, userId, id, parsed.data);
+    } else {
+      await workService.createOpportunity(supabase, userId, parsed.data);
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+
+  revalidateWork();
+  return {};
+}
+
+export async function removeOpportunity(id: string) {
+  const { supabase, userId } = await requireUser();
+  await workService.deleteOpportunity(supabase, userId, id);
+  revalidateWork();
+}
+
+// ---------- Invoices ----------
+
+export async function saveInvoice(input: InvoiceInput, id?: string) {
+  const parsed = invoiceSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  try {
+    if (id) {
+      await workService.updateInvoice(supabase, userId, id, parsed.data);
+    } else {
+      await workService.createInvoice(supabase, userId, parsed.data);
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+
+  revalidateWork();
+  return {};
+}
+
+export async function removeInvoice(id: string) {
+  const { supabase, userId } = await requireUser();
+  await workService.deleteInvoice(supabase, userId, id);
+  revalidateWork();
+}
+
+// ---------- Wins ----------
+
+export async function saveWin(input: WinInput, id?: string) {
+  const parsed = winSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  try {
+    if (id) {
+      await workService.updateWin(supabase, userId, id, parsed.data);
+    } else {
+      await workService.createWin(supabase, userId, parsed.data);
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+
+  revalidateWork();
+  return {};
+}
+
+export async function removeWin(id: string) {
+  const { supabase, userId } = await requireUser();
+  await workService.deleteWin(supabase, userId, id);
+  revalidateWork();
+}
+
+// ---------- Notes ----------
+
+export async function saveWorkNote(input: WorkNoteInput, id?: string) {
+  const parsed = workNoteSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  try {
+    if (id) {
+      await workService.updateWorkNote(supabase, userId, id, parsed.data);
+    } else {
+      await workService.createWorkNote(supabase, userId, parsed.data);
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+
+  revalidateWork();
+  return {};
+}
+
+export async function removeWorkNote(id: string) {
+  const { supabase, userId } = await requireUser();
+  await workService.deleteWorkNote(supabase, userId, id);
+  revalidateWork();
+}
+
+// ---------- Contacts ----------
+
+export async function saveContact(input: ContactInput, id?: string) {
+  const parsed = contactSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  try {
+    if (id) {
+      await workService.updateContact(supabase, userId, id, parsed.data);
+    } else {
+      await workService.createContact(supabase, userId, parsed.data);
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+
+  revalidateWork();
+  return {};
+}
+
+export async function removeContact(id: string) {
+  const { supabase, userId } = await requireUser();
+  await workService.deleteContact(supabase, userId, id);
+  revalidateWork();
 }

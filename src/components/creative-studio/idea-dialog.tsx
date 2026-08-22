@@ -34,6 +34,7 @@ function toDefaults(idea?: CreativeIdea): CreativeIdeaInput {
     title: idea?.title ?? "",
     note: idea?.note ?? undefined,
     status: (idea?.status as CreativeIdeaInput["status"]) ?? "seed",
+    tags: idea?.tags && idea.tags.length > 0 ? idea.tags.join(", ") : undefined,
   };
 }
 
@@ -74,6 +75,11 @@ export function IdeaDialog({ open, onOpenChange, idea }: IdeaDialogProps) {
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="note">Note</Label>
             <Textarea id="note" rows={3} {...register("note")} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="tags">Tags</Label>
+            <Input id="tags" placeholder="Comma separated, e.g. book, lisbon" {...register("tags")} />
           </div>
 
           <Controller

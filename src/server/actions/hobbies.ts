@@ -9,8 +9,12 @@ import {
   type HobbyProjectInput,
   hobbyMemorySchema,
   type HobbyMemoryInput,
+  hobbyNoteSchema,
+  type HobbyNoteInput,
 } from "@/lib/validation/hobbies";
+import { inspirationItemSchema, type InspirationItemInput } from "@/lib/validation/creative";
 import * as hobbyService from "@/services/hobbies";
+import * as creativeService from "@/services/creative";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -40,7 +44,6 @@ export async function saveHobby(input: HobbyInput, id?: string) {
   }
 
   revalidatePath("/hobbies");
-  if (id) revalidatePath(`/hobbies/${id}`);
   return {};
 }
 
@@ -68,21 +71,17 @@ export async function saveHobbyProject(hobbyId: string, input: HobbyProjectInput
     return { error: e instanceof Error ? e.message : "Something went wrong" };
   }
 
-  revalidatePath(`/hobbies/${hobbyId}`);
+  revalidatePath("/hobbies");
   return {};
 }
 
 export async function removeHobbyProject(hobbyId: string, id: string) {
   const { supabase, userId } = await requireUser();
   await hobbyService.deleteHobbyProject(supabase, userId, id);
-  revalidatePath(`/hobbies/${hobbyId}`);
+  revalidatePath("/hobbies");
 }
 
-export async function saveHobbyMemory(
-  hobbyId: string,
-  hobbyName: string,
-  input: HobbyMemoryInput,
-) {
+export async function saveHobbyMemory(hobbyId: string, hobbyName: string, input: HobbyMemoryInput) {
   const parsed = hobbyMemorySchema.safeParse(input);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -96,12 +95,58 @@ export async function saveHobbyMemory(
     return { error: e instanceof Error ? e.message : "Something went wrong" };
   }
 
-  revalidatePath(`/hobbies/${hobbyId}`);
+  revalidatePath("/hobbies");
   return {};
 }
 
 export async function removeHobbyMemory(hobbyId: string, id: string) {
   const { supabase, userId } = await requireUser();
   await hobbyService.deleteHobbyMemory(supabase, userId, id);
-  revalidatePath(`/hobbies/${hobbyId}`);
+  revalidatePath("/hobbies");
+}
+
+export async function saveHobbyNote(hobbyId: string, input: HobbyNoteInput, id?: string) {
+  const parsed = hobbyNoteSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  try {
+    if (id) {
+      await hobbyService.updateHobbyNote(supabase, userId, id, parsed.data);
+    } else {
+      await hobbyService.createHobbyNote(supabase, userId, hobbyId, parsed.data);
+    }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+
+  revalidatePath("/hobbies");
+  return {};
+}
+
+export async function removeHobbyNote(id: string) {
+  const { supabase, userId } = await requireUser();
+  await hobbyService.deleteHobbyNote(supabase, userId, id);
+  revalidatePath("/hobbies");
+}
+
+export async function saveHobbyInspiration(hobbyId: string, input: InspirationItemInput) {
+  const parsed = inspirationItemSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const { supabase, userId } = await requireUser();
+
+  try {
+    await creativeService.createInspirationItem(supabase, userId, { ...parsed.data, hobbyId });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+
+  revalidatePath("/hobbies");
+  return {};
 }

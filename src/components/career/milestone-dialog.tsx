@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { milestoneSchema, type MilestoneInput } from "@/lib/validation/career";
+import {
+  milestoneSchema,
+  type MilestoneInput,
+  type MilestoneFormInput,
+} from "@/lib/validation/career";
 import { saveMilestone } from "@/server/actions/career";
 import type { Tables } from "@/types/database.types";
 import { Button } from "@/components/ui/button";
@@ -13,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StringListInput } from "@/components/career/string-list-input";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +45,8 @@ function toDefaults(milestone?: Milestone): MilestoneInput {
       description: milestone.description ?? undefined,
       occurredOn: milestone.occurred_on,
       experienceId: milestone.experience_id ?? undefined,
+      kind: milestone.kind ?? undefined,
+      tags: milestone.tags,
     };
   }
   return {
@@ -47,16 +54,23 @@ function toDefaults(milestone?: Milestone): MilestoneInput {
     description: undefined,
     occurredOn: new Date().toISOString().slice(0, 10),
     experienceId: undefined,
+    kind: undefined,
+    tags: [],
   };
 }
 
 export function MilestoneDialog({ open, onOpenChange, milestone, experiences }: MilestoneDialogProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const { register, handleSubmit, control, reset } = useForm<MilestoneInput>({
+  const { register, handleSubmit, control, watch, setValue, reset } = useForm<
+    MilestoneFormInput,
+    unknown,
+    MilestoneInput
+  >({
     resolver: zodResolver(milestoneSchema),
     values: toDefaults(milestone),
   });
+  const tags = watch("tags") ?? [];
 
   async function onSubmit(values: MilestoneInput) {
     setSubmitting(true);
@@ -88,8 +102,21 @@ export function MilestoneDialog({ open, onOpenChange, milestone, experiences }: 
             <Input id="occurredOn" type="date" {...register("occurredOn")} />
           </div>
           <div className="flex flex-col gap-1.5">
+            <Label htmlFor="kind">Kind</Label>
+            <Input id="kind" placeholder="Promotion, award, launch…" {...register("kind")} />
+          </div>
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="description">Description</Label>
             <Textarea id="description" rows={3} {...register("description")} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Tags</Label>
+            <StringListInput
+              value={tags}
+              onChange={(next) => setValue("tags", next)}
+              placeholder="Add a tag"
+              layout="chips"
+            />
           </div>
           {experiences.length > 0 && (
             <div className="flex flex-col gap-1.5">

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCollection } from "@/services/collections";
-import { CollectionDetailClient } from "@/components/collections/collection-detail-client";
+import { listCollections, getCollection } from "@/services/collections";
+import { CollectionsClient } from "@/components/collections/collections-client";
 
-export const metadata: Metadata = { title: "Collection" };
+export const metadata: Metadata = { title: "Lists" };
 
 export default async function CollectionDetailPage({
   params,
@@ -17,10 +17,25 @@ export default async function CollectionDetailPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) notFound();
+  const collections = user ? await listCollections(supabase, user.id) : [];
 
-  const result = await getCollection(supabase, user.id, id);
-  if (!result) notFound();
+  if (collections.length === 0) {
+    redirect("/collections");
+  }
 
-  return <CollectionDetailClient collection={result.collection} items={result.items} />;
+  const result = user ? await getCollection(supabase, user.id, id) : null;
+
+  if (!result) {
+    redirect(`/collections/${collections[0].id}`);
+  }
+
+  return (
+    <CollectionsClient
+      collections={collections}
+      selectedId={id}
+      selected={result.collection}
+      items={result.items}
+      autoOpen={false}
+    />
+  );
 }

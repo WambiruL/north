@@ -25,7 +25,7 @@ export interface InspirationDialogProps {
 }
 
 function defaults(): InspirationItemInput {
-  return { title: "", sourceUrl: undefined, imageUrl: undefined, note: undefined };
+  return { title: "", sourceUrl: undefined, imageUrl: undefined, note: undefined, kind: undefined };
 }
 
 export function InspirationDialog({ open, onOpenChange }: InspirationDialogProps) {
@@ -60,6 +60,11 @@ export function InspirationDialog({ open, onOpenChange }: InspirationDialogProps
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="title">Title</Label>
             <Input id="title" placeholder="What is it?" {...register("title")} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="kind">Kind</Label>
+            <Input id="kind" placeholder="e.g. Photo, quote, palette" {...register("kind")} />
           </div>
 
           <div className="flex flex-col gap-1.5">

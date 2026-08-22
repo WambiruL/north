@@ -11,6 +11,7 @@ import type { Tables } from "@/types/database.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -42,6 +43,7 @@ function toDefaults(course?: Course): CourseInput {
       progress: course.progress,
       url: course.url ?? undefined,
       learningPathId: course.learning_path_id ?? undefined,
+      note: course.note ?? undefined,
     };
   }
   return {
@@ -51,6 +53,7 @@ function toDefaults(course?: Course): CourseInput {
     progress: 0,
     url: undefined,
     learningPathId: undefined,
+    note: undefined,
   };
 }
 
@@ -147,6 +150,10 @@ export function CourseDialog({ open, onOpenChange, course, paths }: CourseDialog
             <Label htmlFor="progress">Progress ({progress ?? 0}%)</Label>
             <Input id="progress" type="number" min="0" max="100" {...register("progress")} />
             <Progress value={progress ?? 0} className="mt-1" />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="note">Notes on progress</Label>
+            <Textarea id="note" rows={3} {...register("note")} />
           </div>
 
           <DialogFooter>

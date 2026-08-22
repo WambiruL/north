@@ -9,9 +9,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!session) redirect("/sign-in");
 
   const { profile, user } = session;
+  const preferences = profile?.preferences as { reduceMotion?: boolean } | null;
 
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="flex min-h-screen bg-bg" data-reduce-motion={preferences?.reduceMotion ? "true" : "false"}>
       <Sidebar
         fullName={profile?.full_name || user.email?.split("@")[0] || "You"}
         city={profile?.city ?? null}

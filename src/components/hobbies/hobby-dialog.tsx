@@ -33,6 +33,7 @@ function toDefaults(hobby?: Hobby): HobbyInput {
     name: hobby?.name ?? "",
     description: hobby?.description ?? undefined,
     coverUrl: hobby?.cover_url ?? undefined,
+    goal: hobby?.goal ?? undefined,
   };
 }
 
@@ -83,6 +84,15 @@ export function HobbyDialog({ open, onOpenChange, hobby }: HobbyDialogProps) {
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="coverUrl">Cover image URL</Label>
             <Input id="coverUrl" placeholder="Paste an image URL" {...register("coverUrl")} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="goal">Goal</Label>
+            <Input
+              id="goal"
+              placeholder="e.g. Finish twelve landscape sketches this year"
+              {...register("goal")}
+            />
           </div>
 
           <DialogFooter>

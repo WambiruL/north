@@ -19,8 +19,8 @@ export default async function CreativeProjectDetailPage({
 
   if (!user) notFound();
 
-  const project = await getProjectDetail(supabase, user.id, id);
-  if (!project) notFound();
+  const detail = await getProjectDetail(supabase, user.id, id);
+  if (!detail) notFound();
 
-  return <ProjectDetailClient project={project} />;
+  return <ProjectDetailClient project={detail.project} entries={detail.entries} />;
 }
