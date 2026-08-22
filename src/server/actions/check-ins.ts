@@ -14,7 +14,7 @@ async function requireUser() {
   return { supabase, userId: user.id };
 }
 
-export async function saveCheckIn(input: CheckInInput, id?: string) {
+export async function saveCheckIn(input: CheckInInput) {
   const parsed = checkInSchema.safeParse(input);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -23,11 +23,7 @@ export async function saveCheckIn(input: CheckInInput, id?: string) {
   const { supabase, userId } = await requireUser();
 
   try {
-    if (id) {
-      await checkInService.updateCheckIn(supabase, userId, id, parsed.data);
-    } else {
-      await checkInService.createCheckIn(supabase, userId, parsed.data);
-    }
+    await checkInService.upsertCheckIn(supabase, userId, parsed.data);
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Something went wrong" };
   }

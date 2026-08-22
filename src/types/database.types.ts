@@ -193,43 +193,49 @@ export type Database = {
       }
       check_ins: {
         Row: {
+          challenge: string | null
           created_at: string
           energy: number
           entry_date: string
+          feeling: string | null
+          grateful: string | null
           id: string
+          intention: string | null
+          matters_tomorrow: string | null
           mood: number
-          reflection: string | null
-          reflection_prompt: string | null
           sleep_hours: number | null
-          stress: number
           tags: string[]
           updated_at: string
           user_id: string
         }
         Insert: {
+          challenge?: string | null
           created_at?: string
           energy: number
           entry_date?: string
+          feeling?: string | null
+          grateful?: string | null
           id?: string
+          intention?: string | null
+          matters_tomorrow?: string | null
           mood: number
-          reflection?: string | null
-          reflection_prompt?: string | null
           sleep_hours?: number | null
-          stress: number
           tags?: string[]
           updated_at?: string
           user_id: string
         }
         Update: {
+          challenge?: string | null
           created_at?: string
           energy?: number
           entry_date?: string
+          feeling?: string | null
+          grateful?: string | null
           id?: string
+          intention?: string | null
+          matters_tomorrow?: string | null
           mood?: number
-          reflection?: string | null
-          reflection_prompt?: string | null
           sleep_hours?: number | null
-          stress?: number
           tags?: string[]
           updated_at?: string
           user_id?: string

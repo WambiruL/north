@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Mark } from "@/components/ui/mark";
 
 const SHORTCUTS: { label: string; href: string; tone: "amber" | "teal" | "mahogany" | "muted" }[] = [
-  { label: "New check-in", href: "/check-ins?new=check_in", tone: "amber" },
+  { label: "New check-in", href: "/check-ins", tone: "amber" },
   { label: "New note", href: "/notes?new=note", tone: "muted" },
   { label: "New task", href: "/work?new=task", tone: "teal" },
   { label: "New project", href: "/work?new=project", tone: "teal" },
