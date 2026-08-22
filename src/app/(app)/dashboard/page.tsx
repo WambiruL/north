@@ -3,16 +3,20 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserAndProfile } from "@/services/profile";
 import { getDashboardData } from "@/services/dashboard";
+import { HeroBanner } from "@/components/dashboard/hero-banner";
 import { CheckInPrompt } from "@/components/dashboard/check-in-prompt";
+import { FocusCards } from "@/components/dashboard/focus-cards";
 import { StatTile } from "@/components/dashboard/stat-tile";
+import { SeasonHero } from "@/components/dashboard/season-hero";
+import { ResumeCards } from "@/components/dashboard/resume-cards";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
-import { PrioritiesList } from "@/components/dashboard/priorities-list";
-import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
+import { UpcomingList } from "@/components/dashboard/upcoming-list";
+import { WinsPanel } from "@/components/dashboard/wins-panel";
+import type { PreferencesInput } from "@/lib/validation/settings";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+const TILE_TONES = ["teal", "teal", "teal", "amber", "mahogany", "mahogany"] as const;
 
 export default async function DashboardPage() {
   const session = await getCurrentUserAndProfile();
@@ -20,109 +24,51 @@ export default async function DashboardPage() {
   const { user, profile } = session;
 
   const firstName = (profile?.full_name || user.email?.split("@")[0] || "there").split(" ")[0];
+  const preferences: Partial<PreferencesInput> = (profile?.preferences as Partial<PreferencesInput>) ?? {};
+
   const supabase = await createClient();
   const data = await getDashboardData(supabase, user.id, firstName);
 
   return (
-    <div className="flex max-w-6xl flex-col gap-8">
+    <div className="flex max-w-6xl flex-col gap-10">
+      <HeroBanner greeting={data.greeting} name={firstName} city={profile?.city ?? null} today={data.today} />
+
+      <CheckInPrompt todayCheckIn={data.todayCheckIn} />
+
       <div>
-        <h1 className="max-w-[16em] text-[46px] font-bold leading-[1.08] tracking-tight text-ink">
-          {data.greeting}, {firstName}.
-        </h1>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.3fr_1fr]">
-        <CheckInPrompt todayCheckIn={data.todayCheckIn} />
-
-        <Card className="flex flex-col gap-3 p-6">
-          <h2 className="text-[15px] font-bold text-ink">Financial snapshot</h2>
-          <div className="font-display text-[30px] font-semibold text-ink">
-            {currency.format(data.financialSnapshot.totalBalance)}
-          </div>
-          <div className="flex gap-4 text-[12.5px] text-muted">
-            <span>In: {currency.format(data.financialSnapshot.monthIncome)}</span>
-            <span>Out: {currency.format(data.financialSnapshot.monthExpense)}</span>
-          </div>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatTile
-          label="Active projects"
-          value={String(data.projectCount)}
-          detail="in Work"
-          href="/work"
-          tone="teal"
-        />
-        <StatTile
-          label="Learning"
-          value={`${data.learningProgress}%`}
-          detail={`${data.coursesInProgress} in progress`}
-          href="/learning"
-          tone="teal"
-        />
-        <StatTile
-          label="Dream goals"
-          value={String(data.activeDreamGoals.length)}
-          detail="in motion"
-          href="/dream-life"
-          tone="mahogany"
-        />
-        <StatTile
-          label="Savings goals"
-          value={String(data.financialSnapshot.savingsGoals.length)}
-          detail="tracked"
-          href="/finances"
-          tone="teal"
-        />
+        <div className="mb-4 flex items-baseline justify-between gap-5">
+          <h2 className="text-[24px] font-bold tracking-tight text-ink">What matters most today?</h2>
+        </div>
+        <FocusCards tasks={data.focusTasks} />
       </div>
 
       <div>
-        <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">
-          What matters most today?
-        </h2>
-        <PrioritiesList tasks={data.openTasks} />
+        <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">Where your life stands</h2>
+        <div className="grid grid-cols-2 gap-3.5 md:grid-cols-3 lg:grid-cols-6">
+          {data.snapshotTiles.map((tile, i) => (
+            <StatTile key={tile.label} {...tile} tone={TILE_TONES[i]} />
+          ))}
+        </div>
       </div>
+
+      {preferences.showSeasonCard !== false && (
+        <SeasonHero season={data.currentSeason} goal={data.topCareerGoal} />
+      )}
+
+      <ResumeCards items={data.resume} />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div>
-          <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">
-            Where your life stands
-          </h2>
-          {data.activeDreamGoals.length === 0 ? (
-            <EmptyState
-              title="No goals in motion"
-              description="Set a goal under a dream and it'll show up here."
-            />
-          ) : (
-            <Card className="flex flex-col divide-y divide-line-2 p-0">
-              {data.activeDreamGoals.map((goal) => (
-                <div key={goal.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
-                  <div className="min-w-0">
-                    <p className="truncate text-[13.5px] font-semibold text-ink">{goal.title}</p>
-                    <p className="truncate text-[11.5px] text-faint">{goal.dreamTitle}</p>
-                  </div>
-                  {goal.target_date && (
-                    <span className="shrink-0 text-[11.5px] text-muted">
-                      {new Date(goal.target_date).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </Card>
-          )}
-        </div>
-
-        <div>
-          <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">
-            Pick up where you left off
-          </h2>
+          <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">Lately</h2>
           <ActivityFeed activity={data.recentActivity} />
         </div>
+        <div>
+          <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">What is coming</h2>
+          <UpcomingList items={data.upcoming} />
+        </div>
       </div>
+
+      <WinsPanel wins={data.weeklyWins} />
     </div>
   );
 }
