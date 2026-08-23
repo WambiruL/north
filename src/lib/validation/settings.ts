@@ -10,10 +10,13 @@ export const profileSchema = z.object({
 });
 export type ProfileInput = z.infer<typeof profileSchema>;
 
+export const homeDensityValues = ["focused", "balanced", "full"] as const;
+
 export const preferencesSchema = z.object({
   reduceMotion: z.boolean(),
   openCheckInAfterSignIn: z.boolean(),
   showSeasonCard: z.boolean(),
+  homeDensity: z.enum(homeDensityValues).default("full"),
 });
 export type PreferencesInput = z.infer<typeof preferencesSchema>;
 

@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserAndProfile } from "@/services/profile";
+import { listPinnedSpaces } from "@/services/pinned-spaces";
 import { Sidebar } from "@/components/navigation/sidebar";
 import { MobileNav } from "@/components/navigation/mobile-nav";
 import { Topbar } from "@/components/navigation/topbar";
@@ -10,7 +12,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!session) redirect("/sign-in");
 
   const { profile, user } = session;
+  if (!profile?.onboarded_at) redirect("/onboarding");
+
   const preferences = profile?.preferences as { reduceMotion?: boolean } | null;
+
+  const supabase = await createClient();
+  const pinnedSpaces = await listPinnedSpaces(supabase, user.id);
 
   return (
     <div className="flex min-h-screen bg-bg" data-reduce-motion={preferences?.reduceMotion ? "true" : "false"}>
@@ -19,6 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         fullName={profile?.full_name || user.email?.split("@")[0] || "You"}
         city={profile?.city ?? null}
         avatarUrl={profile?.avatar_url ?? null}
+        pinnedSpaces={pinnedSpaces}
       />
       <div className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">
         <Topbar />

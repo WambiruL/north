@@ -1928,6 +1928,7 @@ export type Database = {
           headline: string | null
           id: string
           onboarded_at: string | null
+          onboarding_seasons: string[]
           preferences: Json
           timezone: string
           updated_at: string
@@ -1941,6 +1942,7 @@ export type Database = {
           headline?: string | null
           id: string
           onboarded_at?: string | null
+          onboarding_seasons?: string[]
           preferences?: Json
           timezone?: string
           updated_at?: string
@@ -1954,9 +1956,34 @@ export type Database = {
           headline?: string | null
           id?: string
           onboarded_at?: string | null
+          onboarding_seasons?: string[]
           preferences?: Json
           timezone?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      pinned_spaces: {
+        Row: {
+          created_at: string
+          id: string
+          position: number
+          space_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position?: number
+          space_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number
+          space_key?: string
+          user_id?: string
         }
         Relationships: []
       }

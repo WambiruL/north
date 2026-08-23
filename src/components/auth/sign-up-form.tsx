@@ -10,6 +10,7 @@ import { detectTimezone } from "@/lib/timezone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { GoogleButton } from "@/components/auth/google-button";
 
 export function SignUpForm() {
   const [serverError, setServerError] = useState<string | null>(null);
@@ -75,6 +76,14 @@ export function SignUpForm() {
       <Button type="submit" variant="accent" size="lg" disabled={isSubmitting} className="mt-1">
         {isSubmitting ? "Creating account…" : "Create account"}
       </Button>
+
+      <div className="flex items-center gap-3.5 text-[12.5px] text-faint">
+        <div className="h-px flex-1 bg-line" />
+        <span>or</span>
+        <div className="h-px flex-1 bg-line" />
+      </div>
+
+      <GoogleButton />
 
       <p className="text-center text-[13px] text-muted">
         Already have an account?{" "}

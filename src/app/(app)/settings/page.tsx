@@ -15,6 +15,7 @@ const DEFAULT_PREFERENCES: PreferencesInput = {
   reduceMotion: false,
   openCheckInAfterSignIn: false,
   showSeasonCard: true,
+  homeDensity: "full",
 };
 
 export default async function SettingsPage() {

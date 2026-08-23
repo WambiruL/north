@@ -8,23 +8,24 @@ import { NAV_GROUPS } from "@/lib/constants/nav";
 import { Mark } from "@/components/ui/mark";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut } from "@/server/actions/auth";
+import { WorkspaceSwitcher } from "@/components/navigation/workspace-switcher";
+import type { Tables } from "@/types/database.types";
 
 export interface SidebarProps {
   fullName: string;
   city: string | null;
   avatarUrl: string | null;
+  pinnedSpaces: Tables<"pinned_spaces">[];
 }
 
-export function Sidebar({ fullName, city, avatarUrl }: SidebarProps) {
+export function Sidebar({ fullName, city, avatarUrl, pinnedSpaces }: SidebarProps) {
   const pathname = usePathname();
   const initial = fullName.trim().charAt(0).toUpperCase() || "N";
 
   return (
     <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col justify-between bg-nav px-4 py-6 text-nav-ink md:flex">
       <div className="flex flex-col gap-8">
-        <Link href="/dashboard" className="px-2 font-display text-[22px] font-semibold italic">
-          North
-        </Link>
+        <WorkspaceSwitcher fullName={fullName} pinnedSpaces={pinnedSpaces} />
 
         <nav className="flex flex-col gap-5">
           {NAV_GROUPS.map((group) => (

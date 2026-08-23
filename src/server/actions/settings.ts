@@ -37,7 +37,6 @@ export async function updateProfile(input: ProfileInput) {
       city: parsed.data.city || null,
       currency: parsed.data.currency,
       timezone: parsed.data.timezone,
-      onboarded_at: new Date().toISOString(),
     })
     .eq("id", userId);
 

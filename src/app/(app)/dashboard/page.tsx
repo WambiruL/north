@@ -25,6 +25,9 @@ export default async function DashboardPage() {
 
   const firstName = (profile?.full_name || user.email?.split("@")[0] || "there").split(" ")[0];
   const preferences: Partial<PreferencesInput> = (profile?.preferences as Partial<PreferencesInput>) ?? {};
+  const density = preferences.homeDensity ?? "full";
+  const showSnapshotAndSeason = density !== "focused";
+  const showResumeActivityWins = density === "full";
 
   const supabase = await createClient();
   const timezone = profile?.timezone || "UTC";
@@ -49,33 +52,39 @@ export default async function DashboardPage() {
         <FocusCards tasks={data.focusTasks} />
       </div>
 
-      <div>
-        <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">Where your life stands</h2>
-        <div className="grid grid-cols-2 gap-3.5 md:grid-cols-3 lg:grid-cols-6">
-          {data.snapshotTiles.map((tile, i) => (
-            <StatTile key={tile.label} {...tile} tone={TILE_TONES[i]} />
-          ))}
+      {showSnapshotAndSeason && (
+        <div>
+          <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">Where your life stands</h2>
+          <div className="grid grid-cols-2 gap-3.5 md:grid-cols-3 lg:grid-cols-6">
+            {data.snapshotTiles.map((tile, i) => (
+              <StatTile key={tile.label} {...tile} tone={TILE_TONES[i]} />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {preferences.showSeasonCard !== false && (
+      {showSnapshotAndSeason && preferences.showSeasonCard !== false && (
         <SeasonHero season={data.currentSeason} goal={data.topCareerGoal} />
       )}
 
-      <ResumeCards items={data.resume} />
+      {showResumeActivityWins && (
+        <>
+          <ResumeCards items={data.resume} />
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <div>
-          <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">Lately</h2>
-          <ActivityFeed activity={data.recentActivity} />
-        </div>
-        <div>
-          <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">What is coming</h2>
-          <UpcomingList items={data.upcoming} />
-        </div>
-      </div>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <div>
+              <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">Lately</h2>
+              <ActivityFeed activity={data.recentActivity} />
+            </div>
+            <div>
+              <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">What is coming</h2>
+              <UpcomingList items={data.upcoming} />
+            </div>
+          </div>
 
-      <WinsPanel wins={data.weeklyWins} />
+          <WinsPanel wins={data.weeklyWins} />
+        </>
+      )}
     </div>
   );
 }
