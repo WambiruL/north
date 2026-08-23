@@ -20,7 +20,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const pinnedSpaces = await listPinnedSpaces(supabase, user.id);
 
   return (
-    <div className="flex min-h-screen bg-bg" data-reduce-motion={preferences?.reduceMotion ? "true" : "false"}>
+    <div
+      className="flex h-screen overflow-hidden bg-bg"
+      data-reduce-motion={preferences?.reduceMotion ? "true" : "false"}
+    >
       <TimezoneSync currentTimezone={profile?.timezone || "UTC"} />
       <Sidebar
         fullName={profile?.full_name || user.email?.split("@")[0] || "You"}
@@ -28,7 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         avatarUrl={profile?.avatar_url ?? null}
         pinnedSpaces={pinnedSpaces}
       />
-      <div className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">
+      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto pb-20 md:pb-0">
         <Topbar />
         <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
       </div>
