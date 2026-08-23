@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dateISOInTimezone, detectTimezone } from "@/lib/timezone";
 import { useRouter } from "next/navigation";
 import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -51,7 +52,7 @@ function toDefaults(transaction?: Transaction, defaultAccountId?: string): Trans
     description: "",
     category: "general",
     amount: 0,
-    occurredOn: new Date().toISOString().slice(0, 10),
+    occurredOn: dateISOInTimezone(detectTimezone()),
   };
 }
 

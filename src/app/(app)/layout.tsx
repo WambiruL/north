@@ -3,6 +3,7 @@ import { getCurrentUserAndProfile } from "@/services/profile";
 import { Sidebar } from "@/components/navigation/sidebar";
 import { MobileNav } from "@/components/navigation/mobile-nav";
 import { Topbar } from "@/components/navigation/topbar";
+import { TimezoneSync } from "@/components/settings/timezone-sync";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await getCurrentUserAndProfile();
@@ -13,6 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen bg-bg" data-reduce-motion={preferences?.reduceMotion ? "true" : "false"}>
+      <TimezoneSync currentTimezone={profile?.timezone || "UTC"} />
       <Sidebar
         fullName={profile?.full_name || user.email?.split("@")[0] || "You"}
         city={profile?.city ?? null}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dateISOInTimezone, detectTimezone } from "@/lib/timezone";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,7 +53,7 @@ function toDefaults(milestone?: Milestone): MilestoneInput {
   return {
     title: "",
     description: undefined,
-    occurredOn: new Date().toISOString().slice(0, 10),
+    occurredOn: dateISOInTimezone(detectTimezone()),
     experienceId: undefined,
     kind: undefined,
     tags: [],

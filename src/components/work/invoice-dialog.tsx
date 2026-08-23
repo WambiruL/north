@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dateISOInTimezone, detectTimezone } from "@/lib/timezone";
 import { useRouter } from "next/navigation";
 import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -63,7 +64,7 @@ function toDefaults(invoice?: Invoice): InvoiceInput {
     workProjectId: null,
     amount: 0,
     status: "sent",
-    issuedOn: new Date().toISOString().slice(0, 10),
+    issuedOn: dateISOInTimezone(detectTimezone()),
     dueOn: undefined,
     paidOn: undefined,
     notes: "",

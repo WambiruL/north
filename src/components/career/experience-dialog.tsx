@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dateISOInTimezone, detectTimezone } from "@/lib/timezone";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,7 +59,7 @@ function toDefaults(experience?: Experience): ExperienceInput {
     title: "",
     organization: "",
     location: undefined,
-    startDate: new Date().toISOString().slice(0, 10),
+    startDate: dateISOInTimezone(detectTimezone()),
     endDate: undefined,
     isCurrent: true,
     narrative: undefined,

@@ -1,16 +1,18 @@
 import Link from "next/link";
-import { format } from "date-fns";
+import { longDateInTimezone } from "@/lib/timezone";
 
 export function HeroBanner({
   greeting,
   name,
   city,
   today,
+  timezone,
 }: {
   greeting: string;
   name: string;
   city: string | null;
   today: Date;
+  timezone: string;
 }) {
   return (
     <div className="relative overflow-hidden rounded-[28px] bg-nav px-8 py-11 text-nav-ink sm:px-12">
@@ -24,7 +26,7 @@ export function HeroBanner({
       />
       <div className="relative">
         <div className="mb-4 flex flex-wrap items-center gap-3.5 text-[11.5px] font-extrabold uppercase tracking-[.14em] text-nav-muted">
-          <span className="text-amber">{format(today, "EEEE, d MMMM")}</span>
+          <span className="text-amber">{longDateInTimezone(timezone, today)}</span>
           {city && (
             <>
               <span className="h-1 w-1 rounded-full bg-nav-muted" />

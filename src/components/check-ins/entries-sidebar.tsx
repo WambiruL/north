@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dateISOInTimezone, detectTimezone } from "@/lib/timezone";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
@@ -41,7 +42,7 @@ export function EntriesSidebar({ entries }: { entries: CheckIn[] }) {
         <input
           type="date"
           autoFocus
-          max={new Date().toISOString().slice(0, 10)}
+          max={dateISOInTimezone(detectTimezone())}
           onChange={(e) => {
             if (e.target.value) router.push(`/check-ins?date=${e.target.value}`);
           }}

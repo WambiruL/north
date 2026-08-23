@@ -2,13 +2,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database.types";
 import type { CheckInInput } from "@/lib/validation/check-ins";
 import { logActivity } from "@/services/activity";
+import { dateISOInTimezone, dateISODaysAgoInTimezone } from "@/lib/timezone";
 
 type Client = SupabaseClient<Database>;
 type CheckIn = Database["public"]["Tables"]["check_ins"]["Row"];
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export async function listCheckIns(supabase: Client, userId: string, limit = 30) {
   const { data } = await supabase
@@ -41,8 +38,8 @@ export async function getLatestCheckIn(supabase: Client, userId: string) {
   return data;
 }
 
-export async function getTodayCheckIn(supabase: Client, userId: string) {
-  return getCheckInForDate(supabase, userId, todayISO());
+export async function getTodayCheckIn(supabase: Client, userId: string, timezone: string) {
+  return getCheckInForDate(supabase, userId, dateISOInTimezone(timezone));
 }
 
 export async function listOtherCheckIns(
@@ -66,11 +63,8 @@ export interface MoodGridCell {
   mood: number | null;
 }
 
-export async function getMoodGrid(supabase: Client, userId: string, days = 35) {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(end.getDate() - (days - 1));
-  const startISO = start.toISOString().slice(0, 10);
+export async function getMoodGrid(supabase: Client, userId: string, timezone: string, days = 35) {
+  const startISO = dateISODaysAgoInTimezone(timezone, days - 1);
 
   const { data } = await supabase
     .from("check_ins")
@@ -83,9 +77,7 @@ export async function getMoodGrid(supabase: Client, userId: string, days = 35) {
 
   const cells: MoodGridCell[] = [];
   for (let i = days - 1; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(end.getDate() - i);
-    const iso = d.toISOString().slice(0, 10);
+    const iso = dateISODaysAgoInTimezone(timezone, i);
     cells.push({ date: iso, mood: byDate.get(iso) ?? null });
   }
   return cells;

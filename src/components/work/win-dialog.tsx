@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dateISOInTimezone, detectTimezone } from "@/lib/timezone";
 import { useRouter } from "next/navigation";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,7 +38,7 @@ function toDefaults(win?: Win): WinInput {
       occurredOn: win.occurred_on,
     };
   }
-  return { title: "", kind: "", note: "", occurredOn: new Date().toISOString().slice(0, 10) };
+  return { title: "", kind: "", note: "", occurredOn: dateISOInTimezone(detectTimezone()) };
 }
 
 export function WinDialog({ open, onOpenChange, win }: WinDialogProps) {

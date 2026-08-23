@@ -4,6 +4,7 @@ export const signUpSchema = z.object({
   fullName: z.string().trim().min(1, "Tell us what to call you").max(120),
   email: z.string().trim().email("Enter a valid email address"),
   password: z.string().min(8, "At least 8 characters"),
+  timezone: z.string().trim().max(80).optional(),
 });
 export type SignUpInput = z.infer<typeof signUpSchema>;
 

@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, type SignUpInput } from "@/lib/validation/auth";
 import { signUp } from "@/server/actions/auth";
+import { detectTimezone } from "@/lib/timezone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +22,7 @@ export function SignUpForm() {
 
   async function onSubmit(values: SignUpInput) {
     setServerError(null);
-    const result = await signUp(values);
+    const result = await signUp({ ...values, timezone: detectTimezone() });
     if (result?.error) setServerError(result.error);
     else if ("needsConfirmation" in result && result.needsConfirmation) {
       setNeedsConfirmation(true);

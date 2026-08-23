@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dateISOInTimezone, detectTimezone } from "@/lib/timezone";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,7 +47,7 @@ function toDefaults(certificate?: Certificate): CertificateInput {
   return {
     title: "",
     issuingOrg: undefined,
-    issuedOn: new Date().toISOString().slice(0, 10),
+    issuedOn: dateISOInTimezone(detectTimezone()),
     note: undefined,
     courseId: undefined,
   };

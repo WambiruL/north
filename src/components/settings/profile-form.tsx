@@ -7,12 +7,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { profileSchema, type ProfileInput, CURRENCIES } from "@/lib/validation/settings";
 import { updateProfile } from "@/server/actions/settings";
+import { detectTimezone } from "@/lib/timezone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Controller } from "react-hook-form";
 import type { Tables } from "@/types/database.types";
+
+const TIMEZONES: string[] =
+  typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
 
 export function ProfileForm({ profile }: { profile: Tables<"profiles"> }) {
   const router = useRouter();
@@ -21,6 +25,7 @@ export function ProfileForm({ profile }: { profile: Tables<"profiles"> }) {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<ProfileInput>({
     resolver: zodResolver(profileSchema),
@@ -88,7 +93,30 @@ export function ProfileForm({ profile }: { profile: Tables<"profiles"> }) {
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="timezone">Timezone</Label>
-          <Input id="timezone" placeholder="Europe/Lisbon" {...register("timezone")} />
+          <div className="flex gap-2">
+            <Input
+              id="timezone"
+              list="timezone-options"
+              placeholder="Europe/Lisbon"
+              autoComplete="off"
+              {...register("timezone")}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="shrink-0"
+              onClick={() => setValue("timezone", detectTimezone(), { shouldValidate: true })}
+            >
+              Detect
+            </Button>
+          </div>
+          <datalist id="timezone-options">
+            {TIMEZONES.map((tz) => (
+              <option key={tz} value={tz} />
+            ))}
+          </datalist>
+          {errors.timezone && <p className="text-[12px] text-mahogany">{errors.timezone.message}</p>}
         </div>
       </div>
 

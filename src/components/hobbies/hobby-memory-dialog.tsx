@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dateISOInTimezone, detectTimezone } from "@/lib/timezone";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,7 +35,7 @@ function defaults(): HobbyMemoryInput {
   return {
     caption: "",
     imageUrl: undefined,
-    occurredOn: new Date().toISOString().slice(0, 10),
+    occurredOn: dateISOInTimezone(detectTimezone()),
     durationMinutes: undefined,
   };
 }

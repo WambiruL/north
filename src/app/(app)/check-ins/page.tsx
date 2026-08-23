@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserAndProfile } from "@/services/profile";
 import {
   getCheckInForDate,
   listOtherCheckIns,
   getMoodGrid,
   computeInsights,
 } from "@/services/check-ins";
+import { dateISOInTimezone, longDateInTimezone } from "@/lib/timezone";
 import { CheckInForm } from "@/components/check-ins/check-in-form";
 import { MoodHeatmap } from "@/components/check-ins/mood-heatmap";
 import { InsightsCard } from "@/components/check-ins/insights-card";
@@ -14,29 +16,26 @@ import { EntriesSidebar } from "@/components/check-ins/entries-sidebar";
 
 export const metadata: Metadata = { title: "Check-in" };
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 export default async function CheckInsPage({
   searchParams,
 }: {
   searchParams: Promise<{ date?: string }>;
 }) {
   const { date } = await searchParams;
-  const entryDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : todayISO();
-  const isToday = entryDate === todayISO();
+  const session = await getCurrentUserAndProfile();
+  const timezone = session?.profile?.timezone || "UTC";
+  const todayISO = dateISOInTimezone(timezone);
+
+  const entryDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : todayISO;
+  const isToday = entryDate === todayISO;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  const [checkIn, otherEntries, moodGrid] = user
+  const [checkIn, otherEntries, moodGrid] = session
     ? await Promise.all([
-        getCheckInForDate(supabase, user.id, entryDate),
-        listOtherCheckIns(supabase, user.id, entryDate, 8),
-        getMoodGrid(supabase, user.id, 35),
+        getCheckInForDate(supabase, session.user.id, entryDate),
+        listOtherCheckIns(supabase, session.user.id, entryDate, 8),
+        getMoodGrid(supabase, session.user.id, timezone, 35),
       ])
     : [null, [], []];
 
@@ -46,7 +45,7 @@ export default async function CheckInsPage({
     <div className="flex max-w-6xl flex-col gap-8">
       <div>
         <h1 className="text-[38px] font-bold tracking-tight text-ink">
-          {format(parseISO(entryDate), "EEEE, d MMMM")}
+          {longDateInTimezone(timezone, parseISO(entryDate + "T12:00:00Z"))}
         </h1>
         <p className="mt-1 text-[17px] text-muted">
           {isToday

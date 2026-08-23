@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dateISOInTimezone, detectTimezone } from "@/lib/timezone";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,7 +32,7 @@ function toDefaults(moment?: Moment): MomentInput {
   if (moment) {
     return { occurredOn: moment.occurred_on, what: moment.what };
   }
-  return { occurredOn: new Date().toISOString().slice(0, 10), what: "" };
+  return { occurredOn: dateISOInTimezone(detectTimezone()), what: "" };
 }
 
 export function MomentDialog({ open, onOpenChange, moment }: MomentDialogProps) {

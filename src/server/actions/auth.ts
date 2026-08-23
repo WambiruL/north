@@ -12,6 +12,7 @@ import {
   type RequestResetInput,
   type UpdatePasswordInput,
 } from "@/lib/validation/auth";
+import { isValidTimezone } from "@/lib/timezone";
 
 export type ActionResult = { error: string } | { error?: undefined };
 export type SignUpResult = ActionResult | { needsConfirmation: true; error?: undefined };
@@ -22,11 +23,14 @@ export async function signUp(input: SignUpInput): Promise<SignUpResult> {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
+  const timezone =
+    parsed.data.timezone && isValidTimezone(parsed.data.timezone) ? parsed.data.timezone : undefined;
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
-    options: { data: { full_name: parsed.data.fullName } },
+    options: { data: { full_name: parsed.data.fullName, timezone } },
   });
 
   if (error) return { error: error.message };

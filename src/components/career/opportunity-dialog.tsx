@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dateISOInTimezone, detectTimezone } from "@/lib/timezone";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,7 +37,7 @@ function toDefaults(opportunity?: Opportunity): OpportunityInput {
       note: opportunity.note ?? undefined,
     };
   }
-  return { occurredOn: new Date().toISOString().slice(0, 10), what: "", note: undefined };
+  return { occurredOn: dateISOInTimezone(detectTimezone()), what: "", note: undefined };
 }
 
 export function OpportunityDialog({ open, onOpenChange, opportunity }: OpportunityDialogProps) {

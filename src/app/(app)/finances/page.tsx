@@ -33,10 +33,17 @@ export default async function FinancesPage({
     );
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("timezone")
+    .eq("id", user.id)
+    .single();
+  const timezone = profile?.timezone || "UTC";
+
   const [accounts, transactions, snapshot, { data: workProjects }] = await Promise.all([
     listAccounts(supabase, user.id),
     listTransactionsWithAccount(supabase, user.id),
-    getFinancialSnapshot(supabase, user.id),
+    getFinancialSnapshot(supabase, user.id, timezone),
     supabase.from("work_projects").select("id, name").eq("user_id", user.id),
   ]);
 

@@ -10,6 +10,7 @@ import {
   type PreferencesInput,
 } from "@/lib/validation/settings";
 import { updatePasswordSchema, type UpdatePasswordInput } from "@/lib/validation/auth";
+import { isValidTimezone } from "@/lib/timezone";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -64,6 +65,31 @@ export async function updatePreferences(input: PreferencesInput) {
 
   revalidatePath("/settings");
   revalidatePath("/dashboard");
+  return {};
+}
+
+/**
+ * Silently corrects an unconfigured "UTC" timezone to the browser's real
+ * one. Only ever touches the default — once a user has picked a timezone
+ * (in Settings, or a non-UTC one at signup), this never overwrites it.
+ */
+export async function syncTimezone(timezone: string) {
+  if (!isValidTimezone(timezone)) return { error: "Invalid timezone" };
+
+  const { supabase, userId } = await requireUser();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("timezone")
+    .eq("id", userId)
+    .single();
+
+  if (!profile || profile.timezone !== "UTC" || timezone === "UTC") return {};
+
+  const { error } = await supabase.from("profiles").update({ timezone }).eq("id", userId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/", "layout");
   return {};
 }
 

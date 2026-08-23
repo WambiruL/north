@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database.types";
+import { monthStartISOInTimezone } from "@/lib/timezone";
 import type {
   AccountInput,
   TransactionInput,
@@ -680,7 +681,7 @@ export async function saveIntention(supabase: Client, userId: string, intention:
 
 // ---------- Snapshot ----------
 
-export async function getFinancialSnapshot(supabase: Client, userId: string) {
+export async function getFinancialSnapshot(supabase: Client, userId: string, timezone: string) {
   const [{ data: accounts }, { data: goals }] = await Promise.all([
     supabase.from("financial_accounts").select("balance").eq("user_id", userId),
     supabase.from("savings_goals").select("*").eq("user_id", userId).order("created_at", { ascending: true }),
@@ -688,8 +689,7 @@ export async function getFinancialSnapshot(supabase: Client, userId: string) {
 
   const totalBalance = (accounts ?? []).reduce((sum, a) => sum + Number(a.balance), 0);
 
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  const monthStart = monthStartISOInTimezone(timezone);
 
   const { data: monthTransactions } = await supabase
     .from("transactions")

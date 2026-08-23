@@ -8,18 +8,19 @@ import { listDreamsWithGoals } from "@/services/dream-life";
 import { listHobbiesWithCounts } from "@/services/hobbies";
 import { listSeasons, listGoals as listCareerGoals } from "@/services/career";
 import { getRecentActivity } from "@/services/activity";
+import { hourInTimezone, dateISODaysAgoInTimezone } from "@/lib/timezone";
 
 type Client = SupabaseClient<Database>;
 
-function greetingFor(date: Date) {
-  const hour = date.getHours();
+function greetingFor(timezone: string, at: Date) {
+  const hour = hourInTimezone(timezone, at);
   if (hour < 5) return "You're up late";
   if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afternoon";
   return "Good evening";
 }
 
-export async function getDashboardData(supabase: Client, userId: string, name: string) {
+export async function getDashboardData(supabase: Client, userId: string, name: string, timezone: string) {
   const [
     todayCheckIn,
     projects,
@@ -35,13 +36,13 @@ export async function getDashboardData(supabase: Client, userId: string, name: s
     activity,
     wins,
   ] = await Promise.all([
-    getTodayCheckIn(supabase, userId),
+    getTodayCheckIn(supabase, userId, timezone),
     listProjectsWithTaskCounts(supabase, userId),
     listFocusTasks(supabase, userId),
     listPathsWithCourses(supabase, userId),
     listLearningProjects(supabase, userId),
     getLearningFocus(supabase, userId),
-    getFinancialSnapshot(supabase, userId),
+    getFinancialSnapshot(supabase, userId, timezone),
     listDreamsWithGoals(supabase, userId),
     listHobbiesWithCounts(supabase, userId),
     listSeasons(supabase, userId),
@@ -67,16 +68,15 @@ export async function getDashboardData(supabase: Client, userId: string, name: s
   const currentSeason = seasons.find((s) => s.is_current) ?? null;
   const topCareerGoal = careerGoals.find((g) => g.status === "active") ?? null;
 
-  const weekAgo = new Date(now);
-  weekAgo.setDate(now.getDate() - 7);
+  const weekAgoISO = dateISODaysAgoInTimezone(timezone, 7, now);
   const weeklyWins = [
     ...wins
-      .filter((w) => new Date(w.occurred_on) >= weekAgo)
+      .filter((w) => w.occurred_on >= weekAgoISO)
       .map((w) => w.title),
     ...activity
       .filter(
         (a) =>
-          new Date(a.occurred_at) >= weekAgo &&
+          a.occurred_at.slice(0, 10) >= weekAgoISO &&
           (a.verb.includes("completed") || a.verb.includes("achieved")),
       )
       .map((a) => a.summary),
@@ -148,7 +148,7 @@ export async function getDashboardData(supabase: Client, userId: string, name: s
   }));
 
   return {
-    greeting: greetingFor(now),
+    greeting: greetingFor(timezone, now),
     name,
     today: now,
     todayCheckIn,

@@ -27,11 +27,18 @@ export default async function DashboardPage() {
   const preferences: Partial<PreferencesInput> = (profile?.preferences as Partial<PreferencesInput>) ?? {};
 
   const supabase = await createClient();
-  const data = await getDashboardData(supabase, user.id, firstName);
+  const timezone = profile?.timezone || "UTC";
+  const data = await getDashboardData(supabase, user.id, firstName, timezone);
 
   return (
     <div className="flex max-w-6xl flex-col gap-10">
-      <HeroBanner greeting={data.greeting} name={firstName} city={profile?.city ?? null} today={data.today} />
+      <HeroBanner
+        greeting={data.greeting}
+        name={firstName}
+        city={profile?.city ?? null}
+        today={data.today}
+        timezone={timezone}
+      />
 
       <CheckInPrompt todayCheckIn={data.todayCheckIn} />
 

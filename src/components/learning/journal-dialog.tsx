@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { dateISOInTimezone, detectTimezone } from "@/lib/timezone";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,7 +33,7 @@ function toDefaults(entry?: JournalEntry): JournalEntryInput {
   if (entry) {
     return { entryDate: entry.entry_date, prompt: entry.prompt, body: entry.body };
   }
-  return { entryDate: new Date().toISOString().slice(0, 10), prompt: "", body: "" };
+  return { entryDate: dateISOInTimezone(detectTimezone()), prompt: "", body: "" };
 }
 
 export function JournalDialog({ open, onOpenChange, entry }: JournalDialogProps) {
