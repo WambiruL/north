@@ -36,6 +36,7 @@ import {
   saveMission,
 } from "@/server/actions/career";
 import { removeSkill } from "@/server/actions/skills";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { careerMapStages } from "@/lib/validation/career";
 import type { ExperienceWithSkills } from "@/services/career";
 
@@ -134,6 +135,7 @@ export function CareerClient({
   careerFacts: { label: string; value: string }[];
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
 
   const [extraSkills, setExtraSkills] = useState<Skill[]>([]);
   const skills = useMemo(() => {
@@ -189,12 +191,17 @@ export function CareerClient({
   }
 
   const handleDelete = useCallback(
-    async (action: () => Promise<void>, label: string) => {
+    async (action: () => Promise<void>, label: string, subject: string) => {
+      const ok = await confirm({
+        title: `Delete "${subject}"?`,
+        description: "This can't be undone.",
+      });
+      if (!ok) return;
       await action();
       toast.success(label);
       router.refresh();
     },
-    [router],
+    [router, confirm],
   );
 
   const seasonSkillLines = useMemo(() => {
@@ -238,7 +245,7 @@ export function CareerClient({
         setEditingExperience(e);
         setExperienceDialogOpen(true);
       },
-      onDelete: () => handleDelete(() => removeExperience(e.id), "Experience removed"),
+      onDelete: () => handleDelete(() => removeExperience(e.id), "Experience removed", e.title),
     }));
     const fromMilestones = milestones.map((m) => ({
       id: `mil-${m.id}`,
@@ -252,7 +259,7 @@ export function CareerClient({
         setEditingMilestone(m);
         setMilestoneDialogOpen(true);
       },
-      onDelete: () => handleDelete(() => removeMilestone(m.id), "Milestone removed"),
+      onDelete: () => handleDelete(() => removeMilestone(m.id), "Milestone removed", m.title),
     }));
     return [...fromExperiences, ...fromMilestones].sort((a, b) => b.date.localeCompare(a.date));
   }, [experiences, milestones, experienceById, handleDelete]);
@@ -607,7 +614,7 @@ export function CareerClient({
                         setEditingExperience(exp);
                         setExperienceDialogOpen(true);
                       }}
-                      onDelete={() => handleDelete(() => removeExperience(exp.id), "Experience removed")}
+                      onDelete={() => handleDelete(() => removeExperience(exp.id), "Experience removed", exp.title)}
                     />
                   </div>
                 ))}
@@ -698,7 +705,7 @@ export function CareerClient({
                           setEditingMilestone(m);
                           setMilestoneDialogOpen(true);
                         }}
-                        onDelete={() => handleDelete(() => removeMilestone(m.id), "Milestone removed")}
+                        onDelete={() => handleDelete(() => removeMilestone(m.id), "Milestone removed", m.title)}
                       />
                     </div>
                   ))}
@@ -788,7 +795,7 @@ export function CareerClient({
                             setEditingSeason(season);
                             setSeasonDialogOpen(true);
                           }}
-                          onDelete={() => handleDelete(() => removeSeason(season.id), "Season removed")}
+                          onDelete={() => handleDelete(() => removeSeason(season.id), "Season removed", season.title)}
                         />
                       </div>
                     )}
@@ -913,7 +920,7 @@ export function CareerClient({
                       setEditingGoal(g);
                       setGoalDialogOpen(true);
                     }}
-                    onDelete={() => handleDelete(() => removeGoal(g.id), "Goal removed")}
+                    onDelete={() => handleDelete(() => removeGoal(g.id), "Goal removed", g.title)}
                   />
                 </Card>
               ))}
@@ -956,7 +963,7 @@ export function CareerClient({
                           setEditingIdentity(s);
                           setIdentityDialogOpen(true);
                         }}
-                        onDelete={() => handleDelete(() => removeStatement(s.id), "Statement removed")}
+                        onDelete={() => handleDelete(() => removeStatement(s.id), "Statement removed", s.kind)}
                       />
                     </div>
                   ))}
@@ -1008,6 +1015,11 @@ export function CareerClient({
                         setSkillDialogOpen(true);
                       }}
                       onDelete={async () => {
+                        const ok = await confirm({
+                          title: `Delete "${skill.name}"?`,
+                          description: "This can't be undone.",
+                        });
+                        if (!ok) return;
                         await removeSkill(skill.id);
                         toast.success("Skill removed");
                         router.refresh();
@@ -1044,7 +1056,7 @@ export function CareerClient({
                                 setEditingMapStep(row);
                                 setMapStepDialogOpen(true);
                               }}
-                              onDelete={() => handleDelete(() => removeMapStep(row.id), "Step removed")}
+                              onDelete={() => handleDelete(() => removeMapStep(row.id), "Step removed", row.label)}
                             />
                           </Card>
                         ))
@@ -1103,7 +1115,7 @@ export function CareerClient({
                               setEditingMentor(m);
                               setMentorDialogOpen(true);
                             }}
-                            onDelete={() => handleDelete(() => removeMentor(m.id), "Influence removed")}
+                            onDelete={() => handleDelete(() => removeMentor(m.id), "Influence removed", m.name)}
                           />
                         </div>
                       </Card>
@@ -1136,7 +1148,7 @@ export function CareerClient({
                           setEditingReflection(r);
                           setReflectionDialogOpen(true);
                         }}
-                        onDelete={() => handleDelete(() => removeReflection(r.id), "Reflection removed")}
+                        onDelete={() => handleDelete(() => removeReflection(r.id), "Reflection removed", r.prompt)}
                       />
                     </Card>
                   ))}
@@ -1168,7 +1180,7 @@ export function CareerClient({
                           setEditingOpportunity(o);
                           setOpportunityDialogOpen(true);
                         }}
-                        onDelete={() => handleDelete(() => removeOpportunity(o.id), "Entry removed")}
+                        onDelete={() => handleDelete(() => removeOpportunity(o.id), "Entry removed", o.what)}
                       />
                     </div>
                   ))}
@@ -1214,7 +1226,7 @@ export function CareerClient({
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDelete(() => removeStatement(s.id), "Legacy note removed")}
+                            onClick={() => handleDelete(() => removeStatement(s.id), "Legacy note removed", s.kind)}
                             className="text-[12px] font-extrabold text-bg/60 transition-colors hover:text-amber"
                           >
                             Delete

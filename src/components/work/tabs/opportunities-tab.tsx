@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { AddRowButton, RowActions } from "@/components/work/shared";
 import { OpportunityDialog } from "@/components/work/opportunity-dialog";
 import { removeOpportunity } from "@/server/actions/work";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type Opportunity = Tables<"work_opportunities">;
 
@@ -24,6 +25,7 @@ const KIND_LABELS: Record<string, string> = {
 
 export function OpportunitiesTab({ opportunities }: { opportunities: Opportunity[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Opportunity | undefined>(undefined);
 
@@ -41,6 +43,12 @@ export function OpportunitiesTab({ opportunities }: { opportunities: Opportunity
   }
 
   async function handleDelete(id: string) {
+    const opportunity = opportunities.find((o) => o.id === id);
+    const ok = await confirm({
+      title: `Delete "${opportunity?.title ?? "this opportunity"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeOpportunity(id);
     toast.success("Removed");
     router.refresh();

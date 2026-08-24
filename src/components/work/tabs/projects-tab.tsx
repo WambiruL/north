@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { AddRowButton } from "@/components/work/shared";
 import { ProjectDialog } from "@/components/work/project-dialog";
 import { removeProject } from "@/server/actions/work";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type Project = Tables<"work_projects"> & {
   client: { id: string; name: string } | null;
@@ -37,6 +38,7 @@ const STATUS_TONE: Record<string, "teal" | "amber" | "default" | "mahogany"> = {
 
 export function ProjectsTab({ projects, clients }: { projects: Project[]; clients: ClientOption[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Project | undefined>(undefined);
 
@@ -51,6 +53,12 @@ export function ProjectsTab({ projects, clients }: { projects: Project[]; client
   }
 
   async function handleDelete(id: string) {
+    const project = projects.find((p) => p.id === id);
+    const ok = await confirm({
+      title: `Delete "${project?.name ?? "this project"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeProject(id);
     toast.success("Project deleted");
     router.refresh();

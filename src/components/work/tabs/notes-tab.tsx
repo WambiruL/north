@@ -11,12 +11,14 @@ import { Button } from "@/components/ui/button";
 import { AddRowButton, RowActions } from "@/components/work/shared";
 import { WorkNoteDialog } from "@/components/work/work-note-dialog";
 import { removeWorkNote } from "@/server/actions/work";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type WorkNote = Tables<"work_notes"> & { work_project: { id: string; name: string } | null };
 type ProjectOption = { id: string; name: string };
 
 export function NotesTab({ notes, projects }: { notes: WorkNote[]; projects: ProjectOption[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<WorkNote | undefined>(undefined);
 
@@ -31,6 +33,12 @@ export function NotesTab({ notes, projects }: { notes: WorkNote[]; projects: Pro
   }
 
   async function handleDelete(id: string) {
+    const note = notes.find((n) => n.id === id);
+    const ok = await confirm({
+      title: `Delete "${note?.title ?? "this note"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeWorkNote(id);
     toast.success("Note removed");
     router.refresh();

@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { AddRowButton, usd } from "@/components/work/shared";
 import { OpportunityDialog } from "@/components/work/opportunity-dialog";
 import { removeOpportunity } from "@/server/actions/work";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type Opportunity = Tables<"work_opportunities">;
 type IncomeSource = Tables<"income_sources">;
@@ -23,6 +24,7 @@ export function EmploymentTab({
   currentEmployment: IncomeSource | null;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Opportunity | undefined>(undefined);
 
@@ -41,6 +43,12 @@ export function EmploymentTab({
   }
 
   async function handleDelete(id: string) {
+    const app = applications.find((a) => a.id === id);
+    const ok = await confirm({
+      title: `Delete "${app?.title ?? "this application"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeOpportunity(id);
     toast.success("Removed");
     router.refresh();

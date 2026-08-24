@@ -32,6 +32,7 @@ import { BucketListSection } from "@/components/dream-life/bucket-list-section";
 import { ManifestoSection } from "@/components/dream-life/manifesto-section";
 import { JournalSection } from "@/components/dream-life/journal-section";
 import { ProgressSection } from "@/components/dream-life/progress-section";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type LifeArea = Tables<"life_areas">;
 type VisionItem = Tables<"vision_items">;
@@ -81,6 +82,7 @@ export function DreamLifeClient({
   autoOpen: "dream_goal" | undefined;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
 
   const [activeTab, setActiveTab] = useState<TabKey>(autoOpen === "dream_goal" ? "action" : "vision");
 
@@ -190,36 +192,78 @@ export function DreamLifeClient({
 
   // ---- delete helpers ----
   async function handleDeleteDream(id: string) {
+    const dream = dreams.find((d) => d.id === id);
+    const ok = await confirm({
+      title: `Delete "${dream?.title ?? "this dream"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeDream(id);
     toast.success("Dream removed");
     router.refresh();
   }
   async function handleDeleteVisionItem(id: string) {
+    const item = visionItems.find((v) => v.id === id);
+    const ok = await confirm({
+      title: `Remove "${item?.caption ?? "this piece"}" from the vision board?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeVisionItem(id);
     toast.success("Removed from vision board");
     router.refresh();
   }
   async function handleDeleteLifeArea(id: string) {
+    const area = lifeAreas.find((a) => a.id === id);
+    const ok = await confirm({
+      title: `Delete "${area?.name ?? "this life area"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeLifeArea(id);
     toast.success("Life area removed");
     router.refresh();
   }
   async function handleDeleteHorizon(id: string) {
+    const horizon = horizons.find((h) => h.id === id);
+    const ok = await confirm({
+      title: `Delete "${horizon?.when_label ?? "this horizon"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeFutureHorizon(id);
     toast.success("Horizon removed");
     router.refresh();
   }
   async function handleDeleteBucketItem(id: string) {
+    const item = bucketItems.find((b) => b.id === id);
+    const ok = await confirm({
+      title: `Remove "${item?.title ?? "this item"}" from the list?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeBucketListItem(id);
     toast.success("Removed from the list");
     router.refresh();
   }
   async function handleDeletePrinciple(id: string) {
+    const principle = principles.find((p) => p.id === id);
+    const ok = await confirm({
+      title: principle ? `Delete "${principle.kind}" principle?` : "Delete this principle?",
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeManifestoPrinciple(id);
     toast.success("Principle removed");
     router.refresh();
   }
   async function handleDeleteLetter(id: string) {
+    const letter = letters.find((l) => l.id === id);
+    const ok = await confirm({
+      title: `Delete "${letter?.prompt ?? "this letter"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeFutureLetter(id);
     toast.success("Letter removed");
     router.refresh();

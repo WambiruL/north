@@ -11,15 +11,24 @@ import { Mark } from "@/components/ui/mark";
 import { EmptyState } from "@/components/ui/empty-state";
 import { moodLevel } from "@/lib/constants/mood";
 import { removeCheckIn } from "@/server/actions/check-ins";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import type { Tables } from "@/types/database.types";
 
 type CheckIn = Tables<"check_ins">;
 
 export function EntriesSidebar({ entries }: { entries: CheckIn[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [addingDate, setAddingDate] = useState(false);
 
   async function handleDelete(id: string) {
+    const entry = entries.find((e) => e.id === id);
+    const label = entry ? format(parseISO(entry.entry_date), "d MMM yyyy") : "this entry";
+    const ok = await confirm({
+      title: `Delete the entry from ${label}?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeCheckIn(id);
     toast.success("Entry deleted");
     router.refresh();

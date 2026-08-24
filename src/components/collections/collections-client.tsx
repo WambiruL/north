@@ -15,6 +15,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { CollectionDialog } from "@/components/collections/collection-dialog";
 import { CollectionItemDialog } from "@/components/collections/collection-item-dialog";
 import { removeCollection, removeCollectionItem, toggleItemDone } from "@/server/actions/collections";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 
 type Collection = Tables<"collections">;
@@ -50,7 +51,7 @@ function ItemRow({
   item: CollectionItem;
   onToggle: (item: CollectionItem) => void;
   onEdit: (item: CollectionItem) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string, title: string) => void;
 }) {
   return (
     <div className="flex items-start gap-3.5 rounded-[13px] px-2.5 py-3.5 transition-colors hover:bg-surface-2">
@@ -88,7 +89,7 @@ function ItemRow({
         </button>
         <button
           type="button"
-          onClick={() => onDelete(item.id)}
+          onClick={() => onDelete(item.id, item.title)}
           className="text-[11.5px] font-bold text-faint transition-colors hover:text-mahogany"
         >
           Delete
@@ -112,6 +113,7 @@ export function CollectionsClient({
   autoOpen: boolean;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [collectionDialogOpen, setCollectionDialogOpen] = useState(autoOpen);
   const [editingCollection, setEditingCollection] = useState<Collection | undefined>(undefined);
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
@@ -127,7 +129,12 @@ export function CollectionsClient({
     setCollectionDialogOpen(true);
   }
 
-  async function handleDeleteCollection(id: string) {
+  async function handleDeleteCollection(id: string, name: string) {
+    const ok = await confirm({
+      title: `Delete "${name}"?`,
+      description: "This deletes the list and everything in it. This can't be undone.",
+    });
+    if (!ok) return;
     await removeCollection(id);
     toast.success("List deleted");
     if (id === selectedId) {
@@ -153,8 +160,13 @@ export function CollectionsClient({
     router.refresh();
   }
 
-  async function handleDeleteItem(id: string) {
+  async function handleDeleteItem(id: string, title: string) {
     if (!selected) return;
+    const ok = await confirm({
+      title: `Delete "${title}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeCollectionItem(selected.id, id);
     toast.success("Item removed");
     router.refresh();
@@ -221,7 +233,7 @@ export function CollectionsClient({
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleDeleteCollection(c.id)}
+                      onClick={() => handleDeleteCollection(c.id, c.name)}
                       className="text-[11.5px] font-bold text-faint transition-colors hover:text-mahogany"
                     >
                       Delete

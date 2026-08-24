@@ -22,6 +22,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 
@@ -55,7 +56,7 @@ export function CollectionItemDialog({
 }: CollectionItemDialogProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const { register, handleSubmit, control, reset } = useForm<CollectionItemFormValues>({
+  const { register, handleSubmit, control, reset, setFocus } = useForm<CollectionItemFormValues>({
     resolver: zodResolver(collectionItemSchema),
     values: toDefaults(item),
   });
@@ -78,10 +79,15 @@ export function CollectionItemDialog({
       toast.error(result.error);
       return;
     }
-    toast.success(item ? "Item updated" : "Item added");
     router.refresh();
-    onOpenChange(false);
-    if (!item) reset(toDefaults(undefined));
+    if (item) {
+      toast.success("Item updated");
+      onOpenChange(false);
+      return;
+    }
+    toast.success("Item added — keep going or press Done");
+    reset(toDefaults(undefined));
+    setFocus("title");
   }
 
   return (
@@ -89,6 +95,9 @@ export function CollectionItemDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{item ? "Edit item" : "Add an item"}</DialogTitle>
+          {!item && (
+            <DialogDescription>Add as many as you like, then press Done.</DialogDescription>
+          )}
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" noValidate>
           <div className="flex flex-col gap-1.5">
@@ -146,7 +155,7 @@ export function CollectionItemDialog({
 
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
+              {item ? "Cancel" : "Done"}
             </Button>
             <Button type="submit" variant="accent" disabled={submitting}>
               {submitting ? "Saving…" : item ? "Save changes" : "Add item"}

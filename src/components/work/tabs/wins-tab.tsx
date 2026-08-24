@@ -11,11 +11,13 @@ import { Button } from "@/components/ui/button";
 import { AddRowButton, RowActions } from "@/components/work/shared";
 import { WinDialog } from "@/components/work/win-dialog";
 import { removeWin } from "@/server/actions/work";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type Win = Tables<"work_wins">;
 
 export function WinsTab({ wins }: { wins: Win[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Win | undefined>(undefined);
 
@@ -30,6 +32,12 @@ export function WinsTab({ wins }: { wins: Win[] }) {
   }
 
   async function handleDelete(id: string) {
+    const win = wins.find((w) => w.id === id);
+    const ok = await confirm({
+      title: `Delete "${win?.title ?? "this win"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeWin(id);
     toast.success("Removed");
     router.refresh();

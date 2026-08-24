@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { Toaster } from "sonner";
+import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -46,7 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col font-sans">
-        {children}
+        <ConfirmProvider>{children}</ConfirmProvider>
         <Toaster
           position="bottom-right"
           toastOptions={{

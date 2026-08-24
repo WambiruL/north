@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { AddRowButton, RowActions } from "@/components/work/shared";
 import { ContactDialog } from "@/components/work/contact-dialog";
 import { removeContact } from "@/server/actions/work";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type Contact = Tables<"work_contacts">;
 
@@ -25,6 +26,7 @@ function initials(name: string) {
 
 export function NetworkTab({ contacts }: { contacts: Contact[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Contact | undefined>(undefined);
 
@@ -39,6 +41,12 @@ export function NetworkTab({ contacts }: { contacts: Contact[] }) {
   }
 
   async function handleDelete(id: string) {
+    const contact = contacts.find((c) => c.id === id);
+    const ok = await confirm({
+      title: `Delete "${contact?.name ?? "this contact"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeContact(id);
     toast.success("Removed");
     router.refresh();

@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ProjectDialog } from "@/components/creative-studio/project-dialog";
 import { ProjectEntryDialog } from "@/components/creative-studio/project-entry-dialog";
 import { removeProject, removeProjectEntry } from "@/server/actions/creative";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type CreativeProject = Tables<"creative_projects">;
 type ProjectEntry = Tables<"creative_project_entries">;
@@ -32,17 +33,29 @@ export function ProjectDetailClient({
   entries: ProjectEntry[];
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [editOpen, setEditOpen] = useState(false);
   const [entryDialogOpen, setEntryDialogOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<ProjectEntry | undefined>(undefined);
 
   async function handleDelete() {
+    const ok = await confirm({
+      title: `Delete "${project.title}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeProject(project.id);
     toast.success("Project deleted");
     router.push("/creative-studio");
   }
 
   async function handleDeleteEntry(id: string) {
+    const entry = entries.find((e) => e.id === id);
+    const ok = await confirm({
+      title: `Delete "${entry?.title ?? "this page"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeProjectEntry(project.id, id);
     toast.success("Page removed");
     router.refresh();

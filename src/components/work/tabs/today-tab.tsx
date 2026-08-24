@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { AddRowButton, RowActions, usd } from "@/components/work/shared";
 import { FocusTaskDialog } from "@/components/work/focus-task-dialog";
 import { toggleFocusTask, removeFocusTask } from "@/server/actions/work";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type Task = Tables<"work_tasks"> & { work_project: { id: string; name: string } | null };
 type Invoice = Tables<"invoices"> & { client: { id: string; name: string } | null };
@@ -35,6 +36,7 @@ export function TodayTab({
   projects: ProjectOption[];
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | undefined>(undefined);
   const [defaultIsPriority, setDefaultIsPriority] = useState(false);
@@ -65,6 +67,12 @@ export function TodayTab({
   }
 
   async function handleDelete(id: string) {
+    const task = tasks.find((t) => t.id === id);
+    const ok = await confirm({
+      title: `Delete "${task?.title ?? "this task"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeFocusTask(id);
     toast.success("Removed");
     router.refresh();

@@ -13,6 +13,7 @@ import { Mark } from "@/components/ui/mark";
 import { EmptyState } from "@/components/ui/empty-state";
 import { NoteDialog } from "@/components/notes/note-dialog";
 import { removeNote } from "@/server/actions/notes";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 
 type Note = Tables<"notes">;
@@ -131,6 +132,7 @@ function NoteCard({
 
 export function NotesClient({ notes, autoOpen }: { notes: Note[]; autoOpen: boolean }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [dialogOpen, setDialogOpen] = useState(autoOpen);
   const [editing, setEditing] = useState<Note | undefined>(undefined);
   const [view, setView] = useState<View>("grid");
@@ -157,6 +159,12 @@ export function NotesClient({ notes, autoOpen }: { notes: Note[]; autoOpen: bool
   }
 
   async function handleDelete(id: string) {
+    const note = notes.find((n) => n.id === id);
+    const ok = await confirm({
+      title: `Delete "${note?.title ?? "this note"}"?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await removeNote(id);
     toast.success("Note deleted");
     router.refresh();

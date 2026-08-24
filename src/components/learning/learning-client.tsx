@@ -38,6 +38,7 @@ import {
   saveFocus,
 } from "@/server/actions/learning";
 import { removeSkill } from "@/server/actions/skills";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { computeLearningOverview } from "@/services/learning";
 import type { PathWithCourses } from "@/services/learning";
 
@@ -110,6 +111,7 @@ export function LearningClient({
   focus: string;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
 
   const [extraSkills, setExtraSkills] = useState<Skill[]>([]);
   const skills = useMemo(() => {
@@ -161,7 +163,17 @@ export function LearningClient({
     router.refresh();
   }
 
-  async function handleDelete(action: (id: string) => Promise<unknown>, id: string, label: string) {
+  async function handleDelete(
+    action: (id: string) => Promise<unknown>,
+    id: string,
+    label: string,
+    subject?: string,
+  ) {
+    const ok = await confirm({
+      title: subject ? `Delete "${subject}"?` : `Delete this ${label.toLowerCase()}?`,
+      description: "This can't be undone.",
+    });
+    if (!ok) return;
     await action(id);
     toast.success(`${label} removed`);
     router.refresh();
@@ -235,7 +247,7 @@ export function LearningClient({
                     <button onClick={() => { setEditingSkill(skill); setSkillDialogOpen(true); }} className="text-faint hover:text-teal">
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
-                    <button onClick={() => handleDelete(removeSkill, skill.id, "Skill")} className="text-faint hover:text-mahogany">
+                    <button onClick={() => handleDelete(removeSkill, skill.id, "Skill", skill.name)} className="text-faint hover:text-mahogany">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -266,7 +278,7 @@ export function LearningClient({
                     </div>
                     {path.description && <p className="mt-1 text-[13.5px] text-muted">{path.description}</p>}
                   </div>
-                  <button onClick={() => handleDelete(removeLearningPath, path.id, "Path")} className="text-faint hover:text-mahogany">
+                  <button onClick={() => handleDelete(removeLearningPath, path.id, "Path", path.title)} className="text-faint hover:text-mahogany">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -284,7 +296,7 @@ export function LearningClient({
                           <button onClick={() => { setEditingCourse(course); setCourseDialogOpen(true); }} className="text-faint hover:text-teal">
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
-                          <button onClick={() => handleDelete(removeCourse, course.id, "Course")} className="text-faint hover:text-mahogany">
+                          <button onClick={() => handleDelete(removeCourse, course.id, "Course", course.title)} className="text-faint hover:text-mahogany">
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </div>
@@ -314,7 +326,7 @@ export function LearningClient({
                     <button onClick={() => { setEditingCourse(course); setCourseDialogOpen(true); }} className="text-faint hover:text-teal">
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
-                    <button onClick={() => handleDelete(removeCourse, course.id, "Course")} className="text-faint hover:text-mahogany">
+                    <button onClick={() => handleDelete(removeCourse, course.id, "Course", course.title)} className="text-faint hover:text-mahogany">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -338,7 +350,7 @@ export function LearningClient({
                 <Mark tone="amber" size={7} />
                 <span className="font-semibold text-ink">{cert.title}</span>
                 <span className="text-faint">{format(parseISO(cert.issued_on), "MMM yyyy")}</span>
-                <button onClick={() => handleDelete(removeCertificate, cert.id, "Certificate")} className="text-faint hover:text-mahogany">
+                <button onClick={() => handleDelete(removeCertificate, cert.id, "Certificate", cert.title)} className="text-faint hover:text-mahogany">
                   <Trash2 className="h-3 w-3" />
                 </button>
               </div>
@@ -376,7 +388,7 @@ export function LearningClient({
                     <button onClick={() => { setEditingProject(project); setProjectDialogOpen(true); }} className="text-faint hover:text-teal">
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
-                    <button onClick={() => handleDelete(removeProject, project.id, "Project")} className="text-faint hover:text-mahogany">
+                    <button onClick={() => handleDelete(removeProject, project.id, "Project", project.title)} className="text-faint hover:text-mahogany">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -402,7 +414,7 @@ export function LearningClient({
                       {session.minutes}m{session.skill_id && skillById.get(session.skill_id) ? ` · ${skillById.get(session.skill_id)?.name}` : ""}
                     </span>
                   </div>
-                  <button onClick={() => handleDelete(removeSession, session.id, "Session")} className="text-faint hover:text-mahogany">
+                  <button onClick={() => handleDelete(removeSession, session.id, "Session", format(parseISO(session.occurred_on), "d MMM"))} className="text-faint hover:text-mahogany">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -420,7 +432,7 @@ export function LearningClient({
                     <span className="font-semibold text-ink">{format(parseISO(moment.occurred_on), "d MMM")}</span>{" "}
                     <span className="text-muted">{moment.what}</span>
                   </div>
-                  <button onClick={() => handleDelete(removeMoment, moment.id, "Moment")} className="text-faint hover:text-mahogany">
+                  <button onClick={() => handleDelete(removeMoment, moment.id, "Moment", moment.what)} className="text-faint hover:text-mahogany">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -467,7 +479,7 @@ export function LearningClient({
                     <button onClick={() => { setEditingShelfItem(item); setShelfDialogOpen(true); }} className="text-faint hover:text-teal">
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
-                    <button onClick={() => handleDelete(removeShelfItem, item.id, "Item")} className="text-faint hover:text-mahogany">
+                    <button onClick={() => handleDelete(removeShelfItem, item.id, "Item", item.title)} className="text-faint hover:text-mahogany">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -500,7 +512,7 @@ export function LearningClient({
                     <button onClick={() => { setEditingCuriosity(c); setCuriosityDialogOpen(true); }} className="text-faint hover:text-teal">
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
-                    <button onClick={() => handleDelete(removeCuriosity, c.id, "Curiosity")} className="text-faint hover:text-mahogany">
+                    <button onClick={() => handleDelete(removeCuriosity, c.id, "Curiosity", c.topic)} className="text-faint hover:text-mahogany">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -522,7 +534,7 @@ export function LearningClient({
                 <div key={entry.id} className="border-b border-line-2 py-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[13px] font-semibold text-ink">{entry.prompt}</span>
-                    <button onClick={() => handleDelete(removeJournalEntry, entry.id, "Entry")} className="text-faint hover:text-mahogany">
+                    <button onClick={() => handleDelete(removeJournalEntry, entry.id, "Entry", entry.prompt)} className="text-faint hover:text-mahogany">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -545,7 +557,7 @@ export function LearningClient({
                     <button onClick={() => { setEditingNote(note); setNoteDialogOpen(true); }} className="text-faint hover:text-teal">
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
-                    <button onClick={() => handleDelete(removeNote, note.id, "Note")} className="text-faint hover:text-mahogany">
+                    <button onClick={() => handleDelete(removeNote, note.id, "Note", note.title)} className="text-faint hover:text-mahogany">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
