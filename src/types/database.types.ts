@@ -1188,6 +1188,7 @@ export type Database = {
           description: string | null
           goal: string | null
           id: string
+          kind: string
           name: string
           updated_at: string
           user_id: string
@@ -1198,6 +1199,7 @@ export type Database = {
           description?: string | null
           goal?: string | null
           id?: string
+          kind?: string
           name: string
           updated_at?: string
           user_id: string
@@ -1208,6 +1210,7 @@ export type Database = {
           description?: string | null
           goal?: string | null
           id?: string
+          kind?: string
           name?: string
           updated_at?: string
           user_id?: string
@@ -1219,6 +1222,7 @@ export type Database = {
           caption: string
           created_at: string
           duration_minutes: number | null
+          fields: Json
           hobby_id: string
           id: string
           image_url: string | null
@@ -1229,6 +1233,7 @@ export type Database = {
           caption: string
           created_at?: string
           duration_minutes?: number | null
+          fields?: Json
           hobby_id: string
           id?: string
           image_url?: string | null
@@ -1239,6 +1244,7 @@ export type Database = {
           caption?: string
           created_at?: string
           duration_minutes?: number | null
+          fields?: Json
           hobby_id?: string
           id?: string
           image_url?: string | null

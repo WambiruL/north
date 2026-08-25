@@ -8,10 +8,89 @@ import type {
   HobbyNoteInput,
 } from "@/lib/validation/hobbies";
 import { logActivity } from "@/services/activity";
+import type { HobbyTemplate } from "@/lib/constants/hobby-templates";
 
 type Client = SupabaseClient<Database>;
 type HobbyProject = Database["public"]["Tables"]["hobby_projects"]["Row"];
 type HobbyMemory = Database["public"]["Tables"]["hobby_memories"]["Row"];
+
+export interface ComputedFact {
+  label: string;
+  value: string;
+}
+
+function fieldValue(memory: HobbyMemory, field: string): unknown {
+  if (field === "duration_minutes") return memory.duration_minutes;
+  if (field === "occurred_on") return memory.occurred_on;
+  const fields = (memory.fields ?? {}) as Record<string, unknown>;
+  return fields[field];
+}
+
+function isThisMonth(dateStr: string): boolean {
+  const now = new Date();
+  const d = new Date(dateStr);
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+}
+
+/** Computes a template's stat facts from a hobby's logged entries. Unknown/empty inputs render as em dashes, never fabricated numbers. */
+export function computeTemplateFacts(template: HobbyTemplate, memories: HobbyMemory[]): ComputedFact[] {
+  return template.statFacts.map((spec) => {
+    switch (spec.kind) {
+      case "sumMonth": {
+        const values = memories
+          .filter((m) => isThisMonth(m.occurred_on))
+          .map((m) => Number(fieldValue(m, spec.field)))
+          .filter((n) => Number.isFinite(n));
+        if (values.length === 0) return { label: spec.label, value: "—" };
+        let sum = values.reduce((a, b) => a + b, 0);
+        if (spec.minutesToHours) sum = sum / 60;
+        const decimals = spec.decimals ?? 0;
+        return { label: spec.label, value: `${sum.toFixed(decimals)}${spec.unit ? ` ${spec.unit}` : ""}` };
+      }
+      case "avg": {
+        const values = memories
+          .map((m) => Number(fieldValue(m, spec.field)))
+          .filter((n) => Number.isFinite(n));
+        if (values.length === 0) return { label: spec.label, value: "—" };
+        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+        const decimals = spec.decimals ?? 0;
+        return { label: spec.label, value: `${avg.toFixed(decimals)}${spec.unit ? ` ${spec.unit}` : ""}` };
+      }
+      case "countMonth": {
+        const count = memories.filter((m) => isThisMonth(m.occurred_on)).length;
+        return { label: spec.label, value: count > 0 ? String(count) : "—" };
+      }
+      case "countTotal":
+        return { label: spec.label, value: memories.length > 0 ? String(memories.length) : "—" };
+      case "countDistinct": {
+        const values = new Set(
+          memories.map((m) => fieldValue(m, spec.field)).filter((v): v is string => typeof v === "string" && v.trim() !== ""),
+        );
+        return { label: spec.label, value: values.size > 0 ? String(values.size) : "—" };
+      }
+    }
+  });
+}
+
+export interface CurrentActivity {
+  label: string;
+  title: string;
+  sub: string | null;
+}
+
+/** Derives the "currently reading" / "last run" style summary shown on a hobby's card, from its most recent entry. */
+export function computeCurrentActivity(
+  template: HobbyTemplate,
+  memories: HobbyMemory[],
+): CurrentActivity | null {
+  const latest = memories[0];
+  if (!latest) return null;
+  const primary = template.primaryField ? fieldValue(latest, template.primaryField) : undefined;
+  const secondary = template.secondaryField ? fieldValue(latest, template.secondaryField) : undefined;
+  const title = typeof primary === "string" && primary.trim() ? primary : latest.caption;
+  const sub = typeof secondary === "string" && secondary.trim() ? secondary : null;
+  return { label: template.currentLabel, title, sub };
+}
 
 export interface HobbyStats {
   streakDays: number;
@@ -140,6 +219,7 @@ export async function createHobby(supabase: Client, userId: string, input: Hobby
     .insert({
       user_id: userId,
       name: input.name,
+      kind: input.kind,
       description: input.description || null,
       cover_url: input.coverUrl || null,
       goal: input.goal || null,
@@ -166,6 +246,7 @@ export async function updateHobby(supabase: Client, userId: string, id: string, 
     .from("hobbies")
     .update({
       name: input.name,
+      kind: input.kind,
       description: input.description || null,
       cover_url: input.coverUrl || null,
       goal: input.goal || null,
@@ -243,6 +324,11 @@ export async function deleteHobbyProject(supabase: Client, userId: string, id: s
   if (error) throw new Error(error.message);
 }
 
+function fallbackCaption(fields: Record<string, string | number> | undefined): string {
+  const firstValue = Object.values(fields ?? {}).find((v) => typeof v === "string" && v.trim() !== "");
+  return typeof firstValue === "string" ? firstValue : "Logged";
+}
+
 export async function createHobbyMemory(
   supabase: Client,
   userId: string,
@@ -255,10 +341,11 @@ export async function createHobbyMemory(
     .insert({
       user_id: userId,
       hobby_id: hobbyId,
-      caption: input.caption,
+      caption: input.caption?.trim() || fallbackCaption(input.fields),
       image_url: input.imageUrl || null,
       occurred_on: input.occurredOn,
       duration_minutes: input.durationMinutes ?? null,
+      fields: input.fields ?? {},
     })
     .select()
     .single();

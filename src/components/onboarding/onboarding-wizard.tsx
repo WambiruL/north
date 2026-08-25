@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mark } from "@/components/ui/mark";
 import { MoodPicker } from "@/components/check-ins/mood-picker";
+import { HobbyKindGrid } from "@/components/hobbies/hobby-kind-picker";
 import { ALL_SPACES } from "@/lib/constants/spaces";
 import { ONBOARDING_SEASONS, DREAM_SUGGESTIONS } from "@/lib/validation/onboarding";
 import { homeDensityValues, type PreferencesInput } from "@/lib/validation/settings";
@@ -16,16 +17,18 @@ import {
   saveOnboardingAreas,
   addOnboardingDream,
   saveOnboardingCheckIn,
+  saveOnboardingHobbies,
   saveOnboardingPersonalization,
   completeOnboarding,
 } from "@/server/actions/onboarding";
 
-type StepKey = "arrival" | "season" | "areas" | "dreams" | "mini" | "personalize" | "arrive";
+type StepKey = "arrival" | "season" | "areas" | "hobbies" | "dreams" | "mini" | "personalize" | "arrive";
 
-const STEPS: { key: StepKey; label: string }[] = [
+const ALL_STEPS: { key: StepKey; label: string }[] = [
   { key: "arrival", label: "Arrival" },
   { key: "season", label: "Season" },
   { key: "areas", label: "Areas" },
+  { key: "hobbies", label: "Hobbies" },
   { key: "dreams", label: "Dreams" },
   { key: "mini", label: "Preview" },
   { key: "personalize", label: "Personalize" },
@@ -67,6 +70,7 @@ export function OnboardingWizard({
 
   const [seasons, setSeasons] = useState<string[]>(initialSeasons);
   const [areas, setAreas] = useState<string[]>([]);
+  const [hobbyKinds, setHobbyKinds] = useState<string[]>([]);
   const [dreams, setDreams] = useState<{ id: string; title: string }[]>([]);
   const [dreamText, setDreamText] = useState("");
 
@@ -77,7 +81,11 @@ export function OnboardingWizard({
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [homeDensity, setHomeDensity] = useState<PreferencesInput["homeDensity"]>("full");
 
-  const step = STEPS[stepIndex];
+  const steps = useMemo(
+    () => ALL_STEPS.filter((s) => s.key !== "hobbies" || areas.includes("hobbies")),
+    [areas],
+  );
+  const step = steps[stepIndex];
 
   function toggleSeason(season: string) {
     setSeasons((prev) => (prev.includes(season) ? prev.filter((s) => s !== season) : [...prev, season]));
@@ -85,6 +93,10 @@ export function OnboardingWizard({
 
   function toggleArea(key: string) {
     setAreas((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  }
+
+  function toggleHobbyKind(key: string) {
+    setHobbyKinds((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   }
 
   async function addDream(title: string) {
@@ -104,6 +116,9 @@ export function OnboardingWizard({
     try {
       if (step.key === "season") await saveOnboardingSeasons({ seasons });
       if (step.key === "areas") await saveOnboardingAreas({ spaceKeys: areas });
+      if (step.key === "hobbies" && hobbyKinds.length > 0) {
+        await saveOnboardingHobbies({ kinds: hobbyKinds });
+      }
       if (step.key === "mini" && (note.trim() || mood !== 3)) {
         await saveOnboardingCheckIn({ mood, note: note.trim() || undefined });
       }
@@ -124,7 +139,7 @@ export function OnboardingWizard({
     }
     setSaving(false);
 
-    if (stepIndex < STEPS.length - 1) setStepIndex((i) => i + 1);
+    if (stepIndex < steps.length - 1) setStepIndex((i) => i + 1);
   }
 
   function goBack() {
@@ -151,7 +166,7 @@ export function OnboardingWizard({
         </div>
 
         <div className="relative flex flex-col gap-0.5">
-          {STEPS.map((s, i) => {
+          {steps.map((s, i) => {
             const active = i === stepIndex;
             const done = i < stepIndex;
             return (
@@ -255,6 +270,25 @@ export function OnboardingWizard({
                       </button>
                     );
                   })}
+                </div>
+                <StepFooterActions onNext={goNext} onSkip={goNext} saving={saving} skipLabel="Skip for now" />
+              </div>
+            )}
+
+            {step.key === "hobbies" && (
+              <div className="max-w-[900px]">
+                <Eyebrow>Time that&apos;s yours</Eyebrow>
+                <StepTitle>What do you enjoy doing?</StepTitle>
+                <StepSub>
+                  Pick a few things that feel like you. North gives each one the kind of space it
+                  actually needs.
+                </StepSub>
+                <div className="mb-10">
+                  <HobbyKindGrid
+                    onPick={toggleHobbyKind}
+                    selected={new Set(hobbyKinds)}
+                    className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                  />
                 </div>
                 <StepFooterActions onNext={goNext} onSkip={goNext} saving={saving} skipLabel="Skip for now" />
               </div>
@@ -481,6 +515,12 @@ export function OnboardingWizard({
                         : "Not set yet"
                     }
                   />
+                  {areas.includes("hobbies") && (
+                    <SummaryRow
+                      label="Hobbies"
+                      value={hobbyKinds.length ? `${hobbyKinds.length} added` : "None yet — add them anytime"}
+                    />
+                  )}
                   <SummaryRow
                     label="Dreams"
                     value={dreams.length ? `${dreams.length} added` : "None yet — add them anytime"}
@@ -502,7 +542,7 @@ export function OnboardingWizard({
             </button>
           )}
           <span className="text-[13px] font-bold text-faint">
-            Step {stepIndex + 1} of {STEPS.length}
+            Step {stepIndex + 1} of {steps.length}
           </span>
           <span className="flex-1" />
           {step.key !== "arrive" && (

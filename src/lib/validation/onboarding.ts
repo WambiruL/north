@@ -38,4 +38,9 @@ export const onboardingCheckInSchema = z.object({
 });
 export type OnboardingCheckInInput = z.infer<typeof onboardingCheckInSchema>;
 
+export const onboardingHobbiesSchema = z.object({
+  kinds: z.array(z.string()).max(20),
+});
+export type OnboardingHobbiesInput = z.infer<typeof onboardingHobbiesSchema>;
+
 export const homeDensityValues = ["focused", "balanced", "full"] as const;

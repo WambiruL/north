@@ -4,10 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
-import { Trash2, Pencil, Sparkles, ExternalLink } from "lucide-react";
+import { Trash2, Pencil, Sparkles, ExternalLink, Star } from "lucide-react";
 import type { Tables } from "@/types/database.types";
 import type { HobbyDetail } from "@/services/hobbies";
 import { formatMinutes } from "@/services/hobbies";
+import { getHobbyTemplate } from "@/lib/constants/hobby-templates";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -38,6 +40,45 @@ const PROJECT_STATUS_VARIANT: Record<string, "teal" | "default" | "mahogany"> = 
   abandoned: "mahogany",
 };
 
+function EntryFieldChips({
+  fields,
+  memoryFields,
+}: {
+  fields: ReturnType<typeof getHobbyTemplate>["fields"];
+  memoryFields: Record<string, unknown>;
+}) {
+  const chips = fields
+    .map((def) => ({ def, value: memoryFields[def.key] }))
+    .filter(({ value }) => value !== undefined && value !== null && value !== "");
+
+  if (chips.length === 0) return null;
+
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      {chips.map(({ def, value }) => (
+        <span
+          key={def.key}
+          className="inline-flex items-center gap-1 rounded-full border border-line-2 bg-surface-2 px-3 py-1 text-[12px] font-semibold text-ink"
+        >
+          <span className="text-faint">{def.label}</span>
+          {def.type === "rating" ? (
+            <span className="inline-flex items-center gap-0.5">
+              {Array.from({ length: Number(value) || 0 }).map((_, i) => (
+                <Star key={i} className="h-3 w-3 fill-amber text-amber" />
+              ))}
+            </span>
+          ) : (
+            <span>
+              {String(value)}
+              {def.unit ? ` ${def.unit}` : ""}
+            </span>
+          )}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function HobbySheet({
   detail,
   open,
@@ -48,7 +89,9 @@ export function HobbySheet({
   onOpenChange: (open: boolean) => void;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const { hobby, projects, memories, notes, inspiration, stats } = detail;
+  const template = getHobbyTemplate(hobby.kind);
 
   const [editHobbyOpen, setEditHobbyOpen] = useState(false);
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
@@ -59,27 +102,40 @@ export function HobbySheet({
   const [inspirationDialogOpen, setInspirationDialogOpen] = useState(false);
 
   async function handleDeleteHobby() {
+    const ok = await confirm({
+      title: `Delete "${hobby.name}"?`,
+      description: "This deletes the hobby and everything logged in it. This can't be undone.",
+    });
+    if (!ok) return;
     await removeHobby(hobby.id);
     toast.success("Hobby deleted");
     onOpenChange(false);
     router.refresh();
   }
-  async function handleDeleteProject(id: string) {
+  async function handleDeleteProject(id: string, title: string) {
+    const ok = await confirm({ title: `Delete "${title}"?`, description: "This can't be undone." });
+    if (!ok) return;
     await removeHobbyProject(hobby.id, id);
-    toast.success("Project deleted");
+    toast.success("Deleted");
     router.refresh();
   }
-  async function handleDeleteMemory(id: string) {
+  async function handleDeleteMemory(id: string, caption: string) {
+    const ok = await confirm({ title: `Delete "${caption}"?`, description: "This can't be undone." });
+    if (!ok) return;
     await removeHobbyMemory(hobby.id, id);
-    toast.success("Memory deleted");
+    toast.success("Deleted");
     router.refresh();
   }
   async function handleDeleteNote(id: string) {
+    const ok = await confirm({ title: "Delete this note?", description: "This can't be undone." });
+    if (!ok) return;
     await removeHobbyNote(id);
     toast.success("Note deleted");
     router.refresh();
   }
-  async function handleDeleteInspiration(id: string) {
+  async function handleDeleteInspiration(id: string, title: string) {
+    const ok = await confirm({ title: `Delete "${title}"?`, description: "This can't be undone." });
+    if (!ok) return;
     await removeInspirationItem(id);
     toast.success("Removed");
     router.refresh();
@@ -187,10 +243,10 @@ export function HobbySheet({
 
             <div className="mt-6 flex flex-wrap gap-2.5">
               <Button variant="accent" size="sm" onClick={() => setMemoryDialogOpen(true)}>
-                Log a moment
+                {template.entryVerb}
               </Button>
               <Button variant="secondary" size="sm" onClick={openNewProject}>
-                New project
+                New {template.projectsLabel.toLowerCase().replace(/s$/, "")}
               </Button>
               <Button variant="secondary" size="sm" onClick={openNewNote}>
                 Add a note
@@ -203,9 +259,9 @@ export function HobbySheet({
             <Tabs defaultValue="overview" className="mt-8">
               <TabsList className="flex-wrap">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="timeline">Timeline</TabsTrigger>
+                <TabsTrigger value="timeline">{template.entriesLabel}</TabsTrigger>
                 <TabsTrigger value="gallery">Gallery</TabsTrigger>
-                <TabsTrigger value="projects">Projects</TabsTrigger>
+                <TabsTrigger value="projects">{template.projectsLabel}</TabsTrigger>
                 <TabsTrigger value="notes">Notes</TabsTrigger>
                 <TabsTrigger value="inspiration">Inspiration</TabsTrigger>
               </TabsList>
@@ -220,14 +276,18 @@ export function HobbySheet({
                     <div className="mt-2 text-[12.5px] font-semibold text-faint">
                       {format(parseISO(stats.latestMemory.occurred_on), "d MMMM yyyy")}
                     </div>
+                    <EntryFieldChips
+                      fields={template.fields}
+                      memoryFields={(stats.latestMemory.fields ?? {}) as Record<string, unknown>}
+                    />
                   </Card>
                 ) : (
                   <EmptyState
                     title="Nothing logged yet"
-                    description="Log a moment to start building this hobby's story."
+                    description={`${template.entryVerb} to start building this hobby's story.`}
                     action={
                       <Button variant="secondary" size="sm" onClick={() => setMemoryDialogOpen(true)}>
-                        Log a moment
+                        {template.entryVerb}
                       </Button>
                     }
                   />
@@ -236,7 +296,7 @@ export function HobbySheet({
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Card className="p-6">
                     <div className="mb-3 text-[11px] font-bold uppercase tracking-wider text-faint">
-                      Projects
+                      {template.projectsLabel}
                     </div>
                     {projects.length === 0 ? (
                       <p className="text-[13.5px] text-muted">No projects started yet.</p>
@@ -273,11 +333,11 @@ export function HobbySheet({
               <TabsContent value="timeline">
                 {memories.length === 0 ? (
                   <EmptyState
-                    title="No moments yet"
-                    description="Log a moment to start this hobby's timeline."
+                    title="Nothing logged yet"
+                    description={`${template.entryVerb} to start this hobby's log.`}
                     action={
                       <Button variant="secondary" size="sm" onClick={() => setMemoryDialogOpen(true)}>
-                        Log a moment
+                        {template.entryVerb}
                       </Button>
                     }
                   />
@@ -289,7 +349,7 @@ export function HobbySheet({
                         <div key={m.id} className="relative">
                           <span className="absolute -left-6 top-1.5 h-2 w-2 rounded-full bg-teal" />
                           <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                               <p className="text-[14.5px] font-semibold leading-relaxed text-ink">
                                 {m.caption}
                               </p>
@@ -297,12 +357,16 @@ export function HobbySheet({
                                 {format(parseISO(m.occurred_on), "d MMMM yyyy")}
                                 {m.duration_minutes ? ` · ${m.duration_minutes} min` : ""}
                               </div>
+                              <EntryFieldChips
+                                fields={template.fields}
+                                memoryFields={(m.fields ?? {}) as Record<string, unknown>}
+                              />
                             </div>
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteMemory(m.id)}
-                              aria-label="Delete memory"
+                              onClick={() => handleDeleteMemory(m.id, m.caption)}
+                              aria-label="Delete entry"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
@@ -341,11 +405,11 @@ export function HobbySheet({
               <TabsContent value="projects" className="flex flex-col gap-3">
                 {projects.length === 0 ? (
                   <EmptyState
-                    title="No projects yet"
+                    title={`No ${template.projectsLabel.toLowerCase()} yet`}
                     description="Track the things you're building or working on within this hobby."
                     action={
                       <Button variant="secondary" size="sm" onClick={openNewProject}>
-                        New project
+                        New {template.projectsLabel.toLowerCase().replace(/s$/, "")}
                       </Button>
                     }
                   />
@@ -376,7 +440,7 @@ export function HobbySheet({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDeleteProject(project.id)}
+                            onClick={() => handleDeleteProject(project.id, project.title)}
                             aria-label="Delete project"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -490,7 +554,7 @@ export function HobbySheet({
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteInspiration(item.id)}
+                              onClick={() => handleDeleteInspiration(item.id, item.title)}
                               aria-label="Delete"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -519,6 +583,7 @@ export function HobbySheet({
         onOpenChange={setMemoryDialogOpen}
         hobbyId={hobby.id}
         hobbyName={hobby.name}
+        kind={hobby.kind}
       />
       <HobbyNoteDialog
         open={noteDialogOpen}

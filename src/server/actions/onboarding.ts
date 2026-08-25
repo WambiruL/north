@@ -8,15 +8,19 @@ import {
   onboardingAreasSchema,
   onboardingDreamSchema,
   onboardingCheckInSchema,
+  onboardingHobbiesSchema,
   type OnboardingSeasonsInput,
   type OnboardingAreasInput,
   type OnboardingDreamInput,
   type OnboardingCheckInInput,
+  type OnboardingHobbiesInput,
 } from "@/lib/validation/onboarding";
 import { preferencesSchema, type PreferencesInput } from "@/lib/validation/settings";
 import { seedInitialPins } from "@/services/pinned-spaces";
 import { upsertCheckIn } from "@/services/check-ins";
 import { createDream } from "@/services/dream-life";
+import { createHobby } from "@/services/hobbies";
+import { getHobbyTemplate } from "@/lib/constants/hobby-templates";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -82,6 +86,22 @@ export async function saveOnboardingCheckIn(input: OnboardingCheckInInput) {
       feeling: parsed.data.note,
       tags: [],
     });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  }
+  return {};
+}
+
+export async function saveOnboardingHobbies(input: OnboardingHobbiesInput) {
+  const parsed = onboardingHobbiesSchema.safeParse(input);
+  if (!parsed.success) return { error: "Invalid input" };
+
+  const { supabase, userId } = await requireUser();
+  try {
+    for (const kind of parsed.data.kinds) {
+      const template = getHobbyTemplate(kind);
+      await createHobby(supabase, userId, { name: template.label, kind: template.key });
+    }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Something went wrong" };
   }
