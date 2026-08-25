@@ -15,8 +15,7 @@ export async function listSkills(supabase: Client, userId: string) {
 
 /**
  * Upsert-friendly create: if a skill with this name already exists for the
- * user, it's returned as-is instead of erroring. Both Career and Learning
- * may want to create the same skill name.
+ * user, it's returned as-is instead of erroring.
  */
 export async function createSkill(supabase: Client, userId: string, input: SkillInput) {
   const { data, error } = await supabase

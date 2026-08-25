@@ -172,7 +172,7 @@ export default function DesignSystemPage() {
             <TabsTrigger value="goals">Goals</TabsTrigger>
           </TabsList>
           <TabsContent value="timeline">
-            <p className="text-[13.5px] text-muted">Career map, in order.</p>
+            <p className="text-[13.5px] text-muted">Everything, in order.</p>
           </TabsContent>
           <TabsContent value="goals">
             <p className="text-[13.5px] text-muted">What the work should add up to.</p>

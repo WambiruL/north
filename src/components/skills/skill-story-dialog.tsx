@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { StringListInput } from "@/components/career/string-list-input";
+import { StringListInput } from "@/components/ui/string-list-input";
 import {
   Dialog,
   DialogContent,
@@ -56,9 +56,8 @@ function toDefaults(skill?: Skill): SkillInput {
 }
 
 /**
- * The richer skill editor — narrative fields shared between Career's "skill
- * story" view (growth timeline, next step) and Learning's "skill map" view
- * (evidence, hours). Both "Add a skill story" and "Add a skill" open this.
+ * The richer skill editor — narrative fields (growth timeline, next step,
+ * evidence, hours) alongside Learning's "skill map" basics.
  */
 export function SkillStoryDialog({ open, onOpenChange, skill, onSaved }: SkillStoryDialogProps) {
   const router = useRouter();

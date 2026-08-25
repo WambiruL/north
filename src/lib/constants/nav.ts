@@ -29,7 +29,6 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Life",
     items: [
-      { label: "Career", href: "/career", tone: "teal" },
       { label: "Learning", href: "/learning", tone: "teal" },
       { label: "Work", href: "/work", tone: "teal" },
       { label: "Finances", href: "/finances", tone: "teal" },

@@ -9,16 +9,11 @@ import { cn } from "@/lib/utils";
 import { updatePreferences } from "@/server/actions/settings";
 import { homeDensityValues, type PreferencesInput } from "@/lib/validation/settings";
 
-const SWITCHES: { key: "openCheckInAfterSignIn" | "showSeasonCard" | "reduceMotion"; label: string; desc: string }[] = [
+const SWITCHES: { key: "openCheckInAfterSignIn" | "reduceMotion"; label: string; desc: string }[] = [
   {
     key: "openCheckInAfterSignIn",
     label: "Open today's check-in after signing in",
     desc: "Skip the dashboard and land straight on the check-in page.",
-  },
-  {
-    key: "showSeasonCard",
-    label: "Show the season card on the dashboard",
-    desc: "The highlighted focus banner near the top of your dashboard.",
   },
   {
     key: "reduceMotion",
@@ -29,7 +24,7 @@ const SWITCHES: { key: "openCheckInAfterSignIn" | "showSeasonCard" | "reduceMoti
 
 const DENSITY_LABELS: Record<(typeof homeDensityValues)[number], { label: string; desc: string }> = {
   focused: { label: "Focused", desc: "Just your check-in and today's priorities." },
-  balanced: { label: "Balanced", desc: "Adds the life snapshot and season highlight." },
+  balanced: { label: "Balanced", desc: "Adds the life snapshot tiles." },
   full: { label: "Full", desc: "Everything, including recent activity and wins." },
 };
 

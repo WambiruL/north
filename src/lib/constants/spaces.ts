@@ -13,7 +13,6 @@ export const ALL_SPACES: SpaceDef[] = [
   { key: "check-ins", label: "Check-ins", href: "/check-ins", preview: "How the day is sitting", tone: "amber" },
   { key: "notes", label: "Notes", href: "/notes", preview: "Things worth writing down", tone: "muted" },
   { key: "collections", label: "Collections", href: "/collections", preview: "Lists that stop circling", tone: "muted" },
-  { key: "career", label: "Career", href: "/career", preview: "The narrative behind the CV", tone: "teal" },
   { key: "learning", label: "Learning", href: "/learning", preview: "Your library", tone: "teal" },
   { key: "work", label: "Work", href: "/work", preview: "What moves work forward", tone: "teal" },
   { key: "finances", label: "Finances", href: "/finances", preview: "Your financial compass", tone: "teal" },

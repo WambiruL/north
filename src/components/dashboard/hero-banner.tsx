@@ -50,12 +50,6 @@ export function HeroBanner({
           >
             Log an expense
           </Link>
-          <Link
-            href="/career"
-            className="rounded-[12px] border border-nav-line bg-white/10 px-5 py-3 text-[13.5px] font-bold transition-transform hover:-translate-y-0.5"
-          >
-            Open career
-          </Link>
         </div>
       </div>
     </div>

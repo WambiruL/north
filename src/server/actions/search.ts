@@ -13,8 +13,6 @@ interface SearchSpec {
   table:
     | "notes"
     | "collections"
-    | "career_experiences"
-    | "career_goals"
     | "courses"
     | "learning_paths"
     | "work_projects"
@@ -31,8 +29,6 @@ interface SearchSpec {
 const SPECS: SearchSpec[] = [
   { table: "notes", column: "title", subtitle: "Notes", hrefBase: "/notes" },
   { table: "collections", column: "name", subtitle: "Collections", hrefBase: "/collections" },
-  { table: "career_experiences", column: "title", subtitle: "Career · Experience", hrefBase: "/career" },
-  { table: "career_goals", column: "title", subtitle: "Career · Goal", hrefBase: "/career" },
   { table: "courses", column: "title", subtitle: "Learning · Course", hrefBase: "/learning" },
   { table: "learning_paths", column: "title", subtitle: "Learning · Path", hrefBase: "/learning" },
   { table: "work_projects", column: "name", subtitle: "Work · Project", hrefBase: "/work" },

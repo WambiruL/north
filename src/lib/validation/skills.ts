@@ -4,8 +4,8 @@ export const skillSchema = z.object({
   name: z.string().min(1, "Name is required").max(120),
   category: z.string().max(80).optional(),
   proficiency: z.coerce.number().int().min(1).max(5),
-  // Narrative fields shared by Career's "skill story" view and Learning's
-  // "skill map" view — the same skill row, read two different ways.
+  // Narrative fields for the richer "skill story" editor, alongside
+  // Learning's simpler "skill map" basics.
   levelLabel: z.string().max(60).optional(),
   nextStep: z.string().max(400).optional(),
   evidence: z.string().max(2000).optional(),

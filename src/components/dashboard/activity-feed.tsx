@@ -9,7 +9,6 @@ const MODULE_TONE: Record<string, NonNullable<MarkProps["tone"]>> = {
   check_in: "amber",
   note: "muted",
   collection: "muted",
-  career: "teal",
   learning: "teal",
   work: "teal",
   finance: "teal",

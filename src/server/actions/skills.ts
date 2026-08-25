@@ -24,7 +24,6 @@ export async function saveSkill(input: SkillInput) {
 
   try {
     const skill = await skillService.createSkill(supabase, userId, parsed.data);
-    revalidatePath("/career");
     revalidatePath("/learning");
     return { skill };
   } catch (e) {
@@ -42,7 +41,6 @@ export async function editSkill(id: string, input: SkillInput) {
 
   try {
     const skill = await skillService.updateSkill(supabase, userId, id, parsed.data);
-    revalidatePath("/career");
     revalidatePath("/learning");
     return { skill };
   } catch (e) {
@@ -53,6 +51,5 @@ export async function editSkill(id: string, input: SkillInput) {
 export async function removeSkill(id: string) {
   const { supabase, userId } = await requireUser();
   await skillService.deleteSkill(supabase, userId, id);
-  revalidatePath("/career");
   revalidatePath("/learning");
 }

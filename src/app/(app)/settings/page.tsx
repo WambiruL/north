@@ -14,7 +14,6 @@ export const metadata: Metadata = { title: "Settings" };
 const DEFAULT_PREFERENCES: PreferencesInput = {
   reduceMotion: false,
   openCheckInAfterSignIn: false,
-  showSeasonCard: true,
   homeDensity: "full",
 };
 

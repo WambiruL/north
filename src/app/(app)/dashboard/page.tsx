@@ -7,7 +7,6 @@ import { HeroBanner } from "@/components/dashboard/hero-banner";
 import { CheckInPrompt } from "@/components/dashboard/check-in-prompt";
 import { FocusCards } from "@/components/dashboard/focus-cards";
 import { StatTile } from "@/components/dashboard/stat-tile";
-import { SeasonHero } from "@/components/dashboard/season-hero";
 import { ResumeCards } from "@/components/dashboard/resume-cards";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { UpcomingList } from "@/components/dashboard/upcoming-list";
@@ -16,7 +15,7 @@ import type { PreferencesInput } from "@/lib/validation/settings";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-const TILE_TONES = ["teal", "teal", "teal", "amber", "mahogany", "mahogany"] as const;
+const TILE_TONES = ["teal", "teal", "amber", "mahogany", "mahogany"] as const;
 
 export default async function DashboardPage() {
   const session = await getCurrentUserAndProfile();
@@ -26,7 +25,7 @@ export default async function DashboardPage() {
   const firstName = (profile?.full_name || user.email?.split("@")[0] || "there").split(" ")[0];
   const preferences: Partial<PreferencesInput> = (profile?.preferences as Partial<PreferencesInput>) ?? {};
   const density = preferences.homeDensity ?? "full";
-  const showSnapshotAndSeason = density !== "focused";
+  const showSnapshot = density !== "focused";
   const showResumeActivityWins = density === "full";
 
   const supabase = await createClient();
@@ -52,19 +51,15 @@ export default async function DashboardPage() {
         <FocusCards tasks={data.focusTasks} />
       </div>
 
-      {showSnapshotAndSeason && (
+      {showSnapshot && (
         <div>
           <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">Where your life stands</h2>
-          <div className="grid grid-cols-2 gap-3.5 md:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3.5 md:grid-cols-3 lg:grid-cols-5">
             {data.snapshotTiles.map((tile, i) => (
               <StatTile key={tile.label} {...tile} tone={TILE_TONES[i]} />
             ))}
           </div>
         </div>
-      )}
-
-      {showSnapshotAndSeason && preferences.showSeasonCard !== false && (
-        <SeasonHero season={data.currentSeason} goal={data.topCareerGoal} />
       )}
 
       {showResumeActivityWins && (

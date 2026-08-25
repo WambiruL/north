@@ -6,7 +6,6 @@ import { listPathsWithCourses, listProjects as listLearningProjects, getLearning
 import { getFinancialSnapshot } from "@/services/finances";
 import { listDreamsWithGoals } from "@/services/dream-life";
 import { listHobbiesWithCounts } from "@/services/hobbies";
-import { listSeasons, listGoals as listCareerGoals } from "@/services/career";
 import { getRecentActivity } from "@/services/activity";
 import { hourInTimezone, dateISODaysAgoInTimezone } from "@/lib/timezone";
 
@@ -31,8 +30,6 @@ export async function getDashboardData(supabase: Client, userId: string, name: s
     snapshot,
     dreams,
     hobbies,
-    seasons,
-    careerGoals,
     activity,
     wins,
   ] = await Promise.all([
@@ -45,8 +42,6 @@ export async function getDashboardData(supabase: Client, userId: string, name: s
     getFinancialSnapshot(supabase, userId, timezone),
     listDreamsWithGoals(supabase, userId),
     listHobbiesWithCounts(supabase, userId),
-    listSeasons(supabase, userId),
-    listCareerGoals(supabase, userId),
     getRecentActivity(supabase, userId, 8),
     listWins(supabase, userId),
   ]);
@@ -64,9 +59,6 @@ export async function getDashboardData(supabase: Client, userId: string, name: s
     .filter((g) => !g.is_done);
 
   const now = new Date();
-
-  const currentSeason = seasons.find((s) => s.is_current) ?? null;
-  const topCareerGoal = careerGoals.find((g) => g.status === "active") ?? null;
 
   const weekAgoISO = dateISODaysAgoInTimezone(timezone, 7, now);
   const weeklyWins = [
@@ -86,9 +78,6 @@ export async function getDashboardData(supabase: Client, userId: string, name: s
     ...focusTasks
       .filter((t) => t.due_date)
       .map((t) => ({ when: t.due_date as string, what: t.title, detail: t.work_project?.name ?? "Work" })),
-    ...careerGoals
-      .filter((g) => g.target_date && g.status === "active")
-      .map((g) => ({ when: g.target_date as string, what: g.title, detail: "Career goal" })),
     ...activeDreamGoals
       .filter((g) => g.target_date)
       .map((g) => ({ when: g.target_date as string, what: g.title, detail: g.dreamTitle })),
@@ -100,12 +89,6 @@ export async function getDashboardData(supabase: Client, userId: string, name: s
     .slice(0, 5);
 
   const snapshotTiles = [
-    {
-      label: "Career",
-      value: activeProjects.length ? `${activeProjects.length} active` : "—",
-      detail: currentSeason?.title ?? (careerGoals.length ? `${careerGoals.length} goals` : "Not started"),
-      href: "/career",
-    },
     {
       label: "Learning",
       value: `${learningProgress}%`,
@@ -154,8 +137,6 @@ export async function getDashboardData(supabase: Client, userId: string, name: s
     todayCheckIn,
     focusTasks: focusTasks.slice(0, 3),
     snapshotTiles,
-    currentSeason,
-    topCareerGoal,
     recentActivity: activity,
     weeklyWins,
     upcoming,

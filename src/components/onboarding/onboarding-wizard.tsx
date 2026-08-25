@@ -130,7 +130,6 @@ export function OnboardingWizard({
         await saveOnboardingPersonalization({
           reduceMotion: false,
           openCheckInAfterSignIn: false,
-          showSeasonCard: true,
           homeDensity,
         });
       }
@@ -417,7 +416,7 @@ export function OnboardingWizard({
                 <div className="pt-3">
                   <div className="text-[11px] font-bold uppercase tracking-wider text-faint">And it connects</div>
                   <div className="mt-4 flex flex-col gap-2.5">
-                    {["Check-ins", "Dream Life", "Career", "Work"].map((label, i, arr) => (
+                    {["Check-ins", "Dream Life", "Hobbies", "Work"].map((label, i, arr) => (
                       <div key={label} className="flex flex-col gap-2.5">
                         <div className="rounded-[12px] border border-line bg-surface px-4 py-3 text-[13.5px] font-bold text-ink">
                           {label}
