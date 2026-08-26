@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserAndProfile } from "@/services/profile";
 import {
   listProjects,
   listIdeas,
@@ -18,9 +19,7 @@ export default async function CreativeStudioPage({
 }) {
   const { new: newParam } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = (await getCurrentUserAndProfile())?.user ?? null;
 
   const [projects, ideas, inspirationItems, moodboards, studioActivity] = user
     ? await Promise.all([

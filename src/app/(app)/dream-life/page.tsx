@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserAndProfile } from "@/services/profile";
 import {
   listLifeAreas,
   listDreamsWithGoals,
@@ -20,9 +21,7 @@ export default async function DreamLifePage({
 }) {
   const { new: newParam } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = (await getCurrentUserAndProfile())?.user ?? null;
 
   const [lifeAreas, dreams, visionItems, horizons, bucketItems, principles, letters] = user
     ? await Promise.all([

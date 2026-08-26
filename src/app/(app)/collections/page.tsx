@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserAndProfile } from "@/services/profile";
 import { listCollections } from "@/services/collections";
 import { CollectionsClient } from "@/components/collections/collections-client";
 
@@ -13,9 +14,7 @@ export default async function CollectionsPage({
 }) {
   const { new: newParam } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = (await getCurrentUserAndProfile())?.user ?? null;
 
   const collections = user ? await listCollections(supabase, user.id) : [];
   const wantsNewDialog = newParam === "collection";

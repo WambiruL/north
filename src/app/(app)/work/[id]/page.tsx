@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserAndProfile } from "@/services/profile";
 import { getProjectDetail, listClients } from "@/services/work";
 import { ProjectDetailClient } from "@/components/work/project-detail-client";
 
@@ -13,9 +14,7 @@ export default async function ProjectDetailPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = (await getCurrentUserAndProfile())?.user ?? null;
 
   if (!user) notFound();
 

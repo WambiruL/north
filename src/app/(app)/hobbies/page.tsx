@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserAndProfile } from "@/services/profile";
 import { listHobbiesWithCounts, getHobbyDetail, type HobbyDetail } from "@/services/hobbies";
 import { HobbiesClient } from "@/components/hobbies/hobbies-client";
 
@@ -12,9 +13,7 @@ export default async function HobbiesPage({
 }) {
   const { hobby } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = (await getCurrentUserAndProfile())?.user ?? null;
 
   const hobbies = user ? await listHobbiesWithCounts(supabase, user.id) : [];
 

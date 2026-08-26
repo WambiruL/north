@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserAndProfile } from "@/services/profile";
 import {
   listAccounts,
   listTransactionsWithAccount,
@@ -16,9 +17,7 @@ export default async function FinancesPage({
 }) {
   const { new: newParam } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = (await getCurrentUserAndProfile())?.user ?? null;
 
   if (!user) {
     return (

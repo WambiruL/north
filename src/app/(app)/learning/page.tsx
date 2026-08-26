@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserAndProfile } from "@/services/profile";
 import {
   listPathsWithCourses,
   listCourses,
@@ -20,9 +21,7 @@ export const metadata: Metadata = { title: "Learning" };
 
 export default async function LearningPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = (await getCurrentUserAndProfile())?.user ?? null;
 
   const [
     paths,

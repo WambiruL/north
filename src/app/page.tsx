@@ -1,20 +1,10 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserAndProfile } from "@/services/profile";
 
 export default async function RootPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await getCurrentUserAndProfile();
+  if (!session) redirect("/sign-in");
 
-  if (!user) redirect("/sign-in");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("preferences")
-    .eq("id", user.id)
-    .single();
-
-  const preferences = profile?.preferences as { openCheckInAfterSignIn?: boolean } | null;
+  const preferences = session.profile?.preferences as { openCheckInAfterSignIn?: boolean } | null;
   redirect(preferences?.openCheckInAfterSignIn ? "/check-ins" : "/dashboard");
 }

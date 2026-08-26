@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserAndProfile } from "@/services/profile";
 import { getProjectDetail } from "@/services/creative";
 import { ProjectDetailClient } from "@/components/creative-studio/project-detail-client";
 
@@ -13,9 +14,7 @@ export default async function CreativeProjectDetailPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = (await getCurrentUserAndProfile())?.user ?? null;
 
   if (!user) notFound();
 
