@@ -183,7 +183,7 @@ export function LearningClient({
   const skillById = useMemo(() => new Map(skills.map((s) => [s.id, s])), [skills]);
 
   return (
-    <div className="flex max-w-6xl flex-col gap-10">
+    <div className="mx-auto flex max-w-6xl flex-col gap-10">
       <div>
         <h1 className="text-[36px] font-bold leading-[1.14] tracking-tight text-ink">
           Welcome to your library.

@@ -42,7 +42,7 @@ export default async function CheckInsPage({
   const insights = computeInsights(otherEntries);
 
   return (
-    <div className="flex max-w-6xl flex-col gap-8">
+    <div className="mx-auto flex max-w-6xl flex-col gap-8">
       <div>
         <h1 className="text-[38px] font-bold tracking-tight text-ink">
           {longDateInTimezone(timezone, parseISO(entryDate + "T12:00:00Z"))}

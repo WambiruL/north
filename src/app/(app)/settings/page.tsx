@@ -28,7 +28,7 @@ export default async function SettingsPage() {
   };
 
   return (
-    <div className="flex max-w-2xl flex-col gap-6">
+    <div className="mx-auto flex max-w-2xl flex-col gap-6">
       <div>
         <h1 className="text-[38px] font-bold tracking-tight text-ink">Settings</h1>
         <p className="mt-1 text-[13.5px] text-muted">Your account, and how North behaves.</p>

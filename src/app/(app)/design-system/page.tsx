@@ -45,7 +45,7 @@ function Section({
 
 export default function DesignSystemPage() {
   return (
-    <div className="flex max-w-4xl flex-col gap-12">
+    <div className="mx-auto flex max-w-4xl flex-col gap-12">
       <div>
         <h1 className="text-[38px] font-bold tracking-tight text-ink">Design System</h1>
         <p className="mt-1 text-[13.5px] text-muted">

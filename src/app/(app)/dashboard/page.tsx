@@ -33,7 +33,7 @@ export default async function DashboardPage() {
   const data = await getDashboardData(supabase, user.id, firstName, timezone);
 
   return (
-    <div className="flex max-w-6xl flex-col gap-10">
+    <div className="mx-auto flex max-w-6xl flex-col gap-10">
       <HeroBanner
         greeting={data.greeting}
         name={firstName}
