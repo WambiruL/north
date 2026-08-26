@@ -35,7 +35,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Topbar />
         <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
       </div>
-      <MobileNav />
+      <MobileNav
+        fullName={profile?.full_name || user.email?.split("@")[0] || "You"}
+        pinnedSpaces={pinnedSpaces}
+      />
     </div>
   );
 }

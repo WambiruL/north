@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import { NAV_GROUPS } from "@/lib/constants/nav";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Mark } from "@/components/ui/mark";
+import { WorkspaceSwitcher } from "@/components/navigation/workspace-switcher";
+import type { Tables } from "@/types/database.types";
 
 const PRIMARY = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
@@ -15,7 +17,13 @@ const PRIMARY = [
   { label: "Dream Life", href: "/dream-life", icon: Compass },
 ];
 
-export function MobileNav() {
+export function MobileNav({
+  fullName,
+  pinnedSpaces,
+}: {
+  fullName: string;
+  pinnedSpaces: Tables<"pinned_spaces">[];
+}) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -53,6 +61,7 @@ export function MobileNav() {
             <SheetTitle>Everything in North</SheetTitle>
           </SheetHeader>
           <div className="mt-4 grid grid-cols-2 gap-2 pb-4">
+            <WorkspaceSwitcher fullName={fullName} pinnedSpaces={pinnedSpaces} variant="surface" />
             {NAV_GROUPS.flatMap((g) => g.items).map((item) => (
               <Link
                 key={item.href}

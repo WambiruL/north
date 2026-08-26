@@ -181,11 +181,11 @@ export default function DesignSystemPage() {
       </Section>
 
       <Section title="Data">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <Avatar className="h-12 w-12">
             <AvatarFallback>L</AvatarFallback>
           </Avatar>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Badge>Default</Badge>
             <Badge variant="teal">Teal</Badge>
             <Badge variant="amber">Amber</Badge>

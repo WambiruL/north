@@ -152,7 +152,7 @@ export function OnboardingWizard({
 
   return (
     <div className="grid min-h-screen grid-cols-1 md:grid-cols-[270px_minmax(0,1fr)]">
-      <aside className="relative flex flex-col justify-between overflow-hidden bg-nav px-7 py-9 text-nav-ink">
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-nav px-7 py-9 text-nav-ink md:flex">
         <div
           className="pointer-events-none absolute -bottom-40 -right-32 h-[420px] w-[420px] rounded-full"
           style={{ background: "radial-gradient(circle, rgba(21,97,109,.5), transparent 68%)" }}
@@ -195,6 +195,35 @@ export function OnboardingWizard({
       </aside>
 
       <div className="flex min-h-screen flex-col">
+        <div className="flex items-center justify-between gap-4 bg-nav px-6 py-4 text-nav-ink md:hidden">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full border-2 border-nav-ink">
+              <span className="h-1.5 w-1.5 rotate-45 bg-amber" />
+            </span>
+            <span className="text-[12.5px] font-extrabold tracking-[.18em]">NORTH</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1.5">
+              {steps.map((s, i) => (
+                <span
+                  key={s.key}
+                  className={cn(
+                    "h-1.5 w-1.5 shrink-0 rounded-full",
+                    i === stepIndex
+                      ? "bg-amber"
+                      : i < stepIndex
+                        ? "bg-nav-ink"
+                        : "border border-nav-muted bg-transparent",
+                  )}
+                />
+              ))}
+            </div>
+            <span className="text-[11.5px] font-bold text-nav-muted">
+              {stepIndex + 1}/{steps.length}
+            </span>
+          </div>
+        </div>
+
         <div className="flex flex-1 items-center px-6 py-14 sm:px-12 md:px-[clamp(24px,5vw,72px)]">
           <div className="w-full">
             {step.key === "arrival" && (

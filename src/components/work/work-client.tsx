@@ -206,7 +206,7 @@ export function WorkClient({
         </TabsContent>
       </Tabs>
 
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3">
+      <div className="fixed bottom-24 right-5 z-50 flex flex-col items-end gap-3 sm:right-8 md:bottom-8">
         {captureOpen && (
           <div className="flex flex-col gap-1 rounded-[20px] border border-line bg-surface p-3 shadow-north-hero">
             {captureItems.map((item) => (

@@ -87,7 +87,7 @@ export function HobbiesClient({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-[38px] font-bold tracking-tight text-ink">Things I make time for.</h1>
           <p className="mt-1 max-w-[38em] text-[15px] text-muted">
