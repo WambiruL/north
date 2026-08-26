@@ -2,20 +2,70 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, PenLine, Compass, MoreHorizontal } from "lucide-react";
-import { useState } from "react";
+import {
+  LayoutGrid,
+  PenLine,
+  StickyNote,
+  ListChecks,
+  BookOpen,
+  Briefcase,
+  Wallet,
+  Sparkles,
+  Palette,
+  Compass,
+  Settings as SettingsIcon,
+  MoreHorizontal,
+  type LucideIcon,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { NAV_GROUPS } from "@/lib/constants/nav";
+import { spaceByKey, type SpaceDef } from "@/lib/constants/spaces";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Mark } from "@/components/ui/mark";
 import { WorkspaceSwitcher } from "@/components/navigation/workspace-switcher";
 import type { Tables } from "@/types/database.types";
 
-const PRIMARY = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
-  { label: "Check-ins", href: "/check-ins", icon: PenLine },
-  { label: "Dream Life", href: "/dream-life", icon: Compass },
-];
+const SPACE_ICONS: Record<string, LucideIcon> = {
+  dashboard: LayoutGrid,
+  "check-ins": PenLine,
+  notes: StickyNote,
+  collections: ListChecks,
+  learning: BookOpen,
+  work: Briefcase,
+  finances: Wallet,
+  hobbies: Sparkles,
+  "creative-studio": Palette,
+  "dream-life": Compass,
+  settings: SettingsIcon,
+};
+
+const HOME_KEY = "dashboard";
+const FALLBACK_KEYS = ["check-ins", "work"];
+
+/** Dashboard is always the first tab (home); the rest follow the user's own pins, in pinned order. Any slot left empty (nothing pinned, or fewer than two pins) falls back to Check-ins then Work. Never fabricates a duplicate tab just to fill a slot. */
+function buildPrimaryTabs(pinnedSpaces: Tables<"pinned_spaces">[]): SpaceDef[] {
+  const home = spaceByKey(HOME_KEY);
+  const pinned = pinnedSpaces
+    .map((p) => spaceByKey(p.space_key))
+    .filter((s): s is SpaceDef => s !== undefined && s.key !== HOME_KEY);
+
+  const chosen: SpaceDef[] = [];
+  for (const space of pinned) {
+    if (chosen.length >= 2) break;
+    if (!chosen.some((c) => c.key === space.key)) chosen.push(space);
+  }
+
+  for (const key of FALLBACK_KEYS) {
+    if (chosen.length >= 2) break;
+    const fallback = spaceByKey(key);
+    if (fallback && fallback.key !== home?.key && !chosen.some((c) => c.key === fallback.key)) {
+      chosen.push(fallback);
+    }
+  }
+
+  return home ? [home, ...chosen] : chosen;
+}
 
 export function MobileNav({
   fullName,
@@ -26,11 +76,13 @@ export function MobileNav({
 }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
+  const primary = useMemo(() => buildPrimaryTabs(pinnedSpaces), [pinnedSpaces]);
 
   return (
     <>
       <nav className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-line bg-raise/95 px-2 py-2 backdrop-blur md:hidden">
-        {PRIMARY.map(({ label, href, icon: Icon }) => {
+        {primary.map(({ label, href, key }) => {
+          const Icon = SPACE_ICONS[key] ?? LayoutGrid;
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link
