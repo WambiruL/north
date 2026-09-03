@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -120,6 +120,11 @@ export function CollectionsClient({
   const [editingCollection, setEditingCollection] = useState<Collection | undefined>(undefined);
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CollectionItem | undefined>(undefined);
+  const [, startTransition] = useTransition();
+  const [optimisticItems, setOptimisticItemDone] = useOptimistic(
+    items,
+    (state, id: string) => state.map((i) => (i.id === id ? { ...i, is_done: !i.is_done } : i)),
+  );
 
   function openNewCollection() {
     setEditingCollection(undefined);
@@ -156,10 +161,13 @@ export function CollectionsClient({
     setItemDialogOpen(true);
   }
 
-  async function handleToggleItem(item: CollectionItem) {
+  function handleToggleItem(item: CollectionItem) {
     if (!selected) return;
-    await toggleItemDone(selected.id, item.id, !item.is_done);
-    router.refresh();
+    startTransition(async () => {
+      setOptimisticItemDone(item.id);
+      await toggleItemDone(selected.id, item.id, !item.is_done);
+      router.refresh();
+    });
   }
 
   async function handleDeleteItem(id: string, title: string) {
@@ -174,10 +182,11 @@ export function CollectionsClient({
     router.refresh();
   }
 
-  const doneCount = items.filter((i) => i.is_done).length;
-  const pct = items.length > 0 ? Math.round((doneCount / items.length) * 100) : 0;
+  const doneCount = optimisticItems.filter((i) => i.is_done).length;
+  const pct = optimisticItems.length > 0 ? Math.round((doneCount / optimisticItems.length) * 100) : 0;
   const subtitle = selected
-    ? selected.description?.trim() || `${items.length} item${items.length === 1 ? "" : "s"} in this list`
+    ? selected.description?.trim() ||
+      `${optimisticItems.length} item${optimisticItems.length === 1 ? "" : "s"} in this list`
     : "";
 
   return (
@@ -276,21 +285,21 @@ export function CollectionsClient({
                 <div className="shrink-0 text-right">
                   <div className="text-[22px] font-extrabold text-ink">{pct}%</div>
                   <div className="text-[12.5px] font-bold text-muted">
-                    {doneCount} / {items.length} done
+                    {doneCount} / {optimisticItems.length} done
                   </div>
                 </div>
               </div>
 
               <Progress value={pct} className="mb-7 mt-6 bg-mahogany-soft" />
 
-              {items.length === 0 ? (
+              {optimisticItems.length === 0 ? (
                 <EmptyState
                   title="No items yet"
                   description="Add the first thing you don't want to lose track of."
                 />
               ) : (
                 <div className="flex flex-col gap-0.5">
-                  {items.map((item) => (
+                  {optimisticItems.map((item) => (
                     <ItemRow
                       key={item.id}
                       item={item}
