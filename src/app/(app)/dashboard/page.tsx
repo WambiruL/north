@@ -8,7 +8,6 @@ import { CheckInPrompt } from "@/components/dashboard/check-in-prompt";
 import { FocusCards } from "@/components/dashboard/focus-cards";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { ResumeCards } from "@/components/dashboard/resume-cards";
-import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { UpcomingList } from "@/components/dashboard/upcoming-list";
 import { WinsPanel } from "@/components/dashboard/wins-panel";
 import type { PreferencesInput } from "@/lib/validation/settings";
@@ -67,15 +66,9 @@ export default async function DashboardPage() {
         <>
           <ResumeCards items={data.resume} />
 
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-            <div>
-              <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">Lately</h2>
-              <ActivityFeed activity={data.recentActivity} />
-            </div>
-            <div>
-              <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">What is coming</h2>
-              <UpcomingList items={data.upcoming} />
-            </div>
+          <div>
+            <h2 className="mb-4 text-[24px] font-bold tracking-tight text-ink">What is coming</h2>
+            <UpcomingList items={data.upcoming} />
           </div>
 
           <WinsPanel wins={data.weeklyWins} />

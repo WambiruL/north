@@ -142,7 +142,6 @@ export async function getDashboardData(
     todayCheckIn,
     focusTasks: focusTasks.slice(0, 3),
     snapshotTiles,
-    recentActivity: activity,
     weeklyWins,
     upcoming,
     resume,
