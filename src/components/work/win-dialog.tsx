@@ -75,7 +75,7 @@ export function WinDialog({ open, onOpenChange, win }: WinDialogProps) {
             <Input id="title" {...register("title")} placeholder="Kestrel signed the renewal" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="kind">Kind</Label>
               <Input id="kind" {...register("kind")} placeholder="Delivered, referral…" />

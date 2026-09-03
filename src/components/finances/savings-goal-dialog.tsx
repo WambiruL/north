@@ -73,7 +73,7 @@ export function SavingsGoalDialog({ open, onOpenChange, goal }: SavingsGoalDialo
             <Input id="name" {...register("name")} placeholder="Emergency fund" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="targetAmount">Target amount</Label>
               <Input id="targetAmount" type="number" step="0.01" {...register("targetAmount")} />

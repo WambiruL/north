@@ -87,7 +87,7 @@ export function WorkNoteDialog({ open, onOpenChange, note, projects }: WorkNoteD
             <Input id="title" {...register("title")} placeholder="Kickoff call notes" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="metWith">With</Label>
               <Input id="metWith" {...register("metWith")} placeholder="Who was there" />

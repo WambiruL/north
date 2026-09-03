@@ -99,7 +99,7 @@ export function SkillStoryDialog({ open, onOpenChange, skill, onSaved }: SkillSt
             <Label htmlFor="name">Skill</Label>
             <Input id="name" placeholder="Prototyping" {...register("name")} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="category">Category</Label>
               <Input id="category" placeholder="Craft, leadership…" {...register("category")} />

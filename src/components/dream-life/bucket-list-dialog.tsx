@@ -86,7 +86,7 @@ export function BucketListDialog({ open, onOpenChange, item }: BucketListDialogP
             <Input id="title" placeholder="Swim in the sea at night" {...register("title")} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="category">Category</Label>
               <Input id="category" placeholder="Travel, Adventure…" {...register("category")} />

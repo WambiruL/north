@@ -76,7 +76,7 @@ export function ContactDialog({ open, onOpenChange, contact }: ContactDialogProp
             <Input id="name" {...register("name")} placeholder="Sofia Reyes" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="role">Role</Label>
               <Input id="role" {...register("role")} placeholder="Head of Design" />
@@ -87,7 +87,7 @@ export function ContactDialog({ open, onOpenChange, contact }: ContactDialogProp
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="howMet">How you know them</Label>
               <Input id="howMet" {...register("howMet")} placeholder="Introduced by…" />
