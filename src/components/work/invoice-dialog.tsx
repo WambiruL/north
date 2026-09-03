@@ -55,6 +55,7 @@ function toDefaults(invoice?: Invoice): InvoiceInput {
       issuedOn: invoice.issued_on,
       dueOn: invoice.due_on ?? undefined,
       paidOn: invoice.paid_on ?? undefined,
+      paidAmount: invoice.paid_amount == null ? undefined : Number(invoice.paid_amount),
       notes: invoice.notes ?? undefined,
     };
   }
@@ -67,6 +68,7 @@ function toDefaults(invoice?: Invoice): InvoiceInput {
     issuedOn: dateISOInTimezone(detectTimezone()),
     dueOn: undefined,
     paidOn: undefined,
+    paidAmount: undefined,
     notes: "",
   };
 }
@@ -74,10 +76,11 @@ function toDefaults(invoice?: Invoice): InvoiceInput {
 export function InvoiceDialog({ open, onOpenChange, invoice, clients, projects }: InvoiceDialogProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const { register, handleSubmit, control, reset } = useForm<InvoiceInput>({
+  const { register, handleSubmit, control, reset, watch, formState: { errors } } = useForm<InvoiceInput>({
     resolver: zodResolver(invoiceSchema) as unknown as Resolver<InvoiceInput>,
     values: toDefaults(invoice),
   });
+  const status = watch("status");
 
   async function onSubmit(values: InvoiceInput) {
     setSubmitting(true);
@@ -105,7 +108,7 @@ export function InvoiceDialog({ open, onOpenChange, invoice, clients, projects }
             <Input id="title" {...register("title")} placeholder="Kestrel — Phase 2" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="amount">Amount</Label>
               <Input id="amount" type="number" step="0.01" {...register("amount")} />
@@ -133,7 +136,16 @@ export function InvoiceDialog({ open, onOpenChange, invoice, clients, projects }
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          {(status === "sent" || status === "overdue") && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="paidAmount">Paid so far</Label>
+              <Input id="paidAmount" type="number" step="0.01" min="0" placeholder="0" {...register("paidAmount")} />
+              {errors.paidAmount && <p className="text-[12px] text-mahogany">{errors.paidAmount.message}</p>}
+              <p className="text-[12px] text-faint">Leave blank if nothing has been received yet.</p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label>Client</Label>
               <Controller
@@ -186,7 +198,7 @@ export function InvoiceDialog({ open, onOpenChange, invoice, clients, projects }
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="issuedOn">Issued</Label>
               <Input id="issuedOn" type="date" {...register("issuedOn")} />

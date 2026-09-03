@@ -12,6 +12,7 @@ import type {
   ContactInput,
 } from "@/lib/validation/work";
 import { logActivity } from "@/services/activity";
+import { invoiceReceived, invoiceRemaining } from "@/lib/invoice-money";
 
 type Client = SupabaseClient<Database>;
 
@@ -412,6 +413,7 @@ export async function createInvoice(supabase: Client, userId: string, input: Inv
       issued_on: input.issuedOn,
       due_on: input.dueOn ?? null,
       paid_on: input.status === "paid" ? (input.paidOn ?? input.issuedOn) : (input.paidOn ?? null),
+      paid_amount: input.paidAmount ?? null,
       notes: input.notes ?? null,
     })
     .select()
@@ -447,6 +449,7 @@ export async function updateInvoice(
       issued_on: input.issuedOn,
       due_on: input.dueOn ?? null,
       paid_on: input.status === "paid" ? (input.paidOn ?? input.issuedOn) : (input.paidOn ?? null),
+      paid_amount: input.paidAmount ?? null,
       notes: input.notes ?? null,
       updated_at: new Date().toISOString(),
     })
@@ -646,7 +649,7 @@ export async function getWorkAnalytics(supabase: Client, userId: string) {
   const [{ data: projects }, { data: invoices }, { data: wins }, { data: opportunities }] =
     await Promise.all([
       supabase.from("work_projects").select("status, created_at").eq("user_id", userId),
-      supabase.from("invoices").select("amount, status, issued_on").eq("user_id", userId),
+      supabase.from("invoices").select("amount, status, issued_on, paid_amount").eq("user_id", userId),
       supabase.from("work_wins").select("id, occurred_on").eq("user_id", userId),
       supabase.from("work_opportunities").select("kind, status").eq("user_id", userId),
     ]);
@@ -655,12 +658,14 @@ export async function getWorkAnalytics(supabase: Client, userId: string) {
   const activeProjects = allProjects.filter((p) => p.status === "active").length;
 
   const allInvoices = invoices ?? [];
-  const outstanding = allInvoices
-    .filter((i) => i.status !== "paid")
-    .reduce((sum, i) => sum + Number(i.amount), 0);
-  const paidTotal = allInvoices
-    .filter((i) => i.status === "paid")
-    .reduce((sum, i) => sum + Number(i.amount), 0);
+  const outstanding = allInvoices.reduce(
+    (sum, i) => sum + invoiceRemaining(Number(i.amount), i.status, i.paid_amount),
+    0,
+  );
+  const paidTotal = allInvoices.reduce(
+    (sum, i) => sum + invoiceReceived(Number(i.amount), i.status, i.paid_amount),
+    0,
+  );
 
   const now = new Date();
   const quarterAgo = new Date(now);

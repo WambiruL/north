@@ -9,10 +9,11 @@ import type { Tables } from "@/types/database.types";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AddRowButton } from "@/components/work/shared";
-import { formatCurrency } from "@/lib/currency";
 import { ClientDialog } from "@/components/work/client-dialog";
 import { InvoiceDialog } from "@/components/work/invoice-dialog";
 import { removeClient, removeInvoice } from "@/server/actions/work";
+import { formatCurrency } from "@/lib/currency";
+import { invoiceReceived, invoiceRemaining, invoicePaymentState } from "@/lib/invoice-money";
 
 type ClientRow = Tables<"clients">;
 type Invoice = Tables<"invoices"> & {
@@ -30,6 +31,12 @@ function initials(name: string) {
     .map((p) => p[0]?.toUpperCase())
     .join("");
 }
+
+const PAYMENT_LABEL: Record<string, string> = {
+  paid: "Paid",
+  partial: "Partially paid",
+  unpaid: "Unpaid",
+};
 
 export function FreelanceTab({
   clients,
@@ -50,21 +57,20 @@ export function FreelanceTab({
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | undefined>(undefined);
 
-  const outstandingByClient = new Map<string, number>();
+  const remainingByClient = new Map<string, number>();
   for (const invoice of invoices) {
-    if (invoice.status === "paid" || !invoice.client_id) continue;
-    outstandingByClient.set(
-      invoice.client_id,
-      (outstandingByClient.get(invoice.client_id) ?? 0) + Number(invoice.amount),
-    );
+    if (!invoice.client_id) continue;
+    const remaining = invoiceRemaining(Number(invoice.amount), invoice.status, invoice.paid_amount);
+    if (remaining <= 0) continue;
+    remainingByClient.set(invoice.client_id, (remainingByClient.get(invoice.client_id) ?? 0) + remaining);
   }
 
-  const paidTotal = invoices
-    .filter((i) => i.status === "paid")
-    .reduce((sum, i) => sum + Number(i.amount), 0);
-  const outstandingTotal = invoices
-    .filter((i) => i.status !== "paid")
-    .reduce((sum, i) => sum + Number(i.amount), 0);
+  const totalAgreed = invoices.reduce((sum, i) => sum + Number(i.amount), 0);
+  const totalReceived = invoices.reduce(
+    (sum, i) => sum + invoiceReceived(Number(i.amount), i.status, i.paid_amount),
+    0,
+  );
+  const totalRemaining = Math.max(totalAgreed - totalReceived, 0);
 
   function openEditClient(client: ClientRow) {
     setEditingClient(client);
@@ -103,7 +109,7 @@ export function FreelanceTab({
         ) : (
           <div className="flex flex-col gap-5">
             {clients.map((client) => {
-              const outstanding = outstandingByClient.get(client.id) ?? 0;
+              const remaining = remainingByClient.get(client.id) ?? 0;
               return (
                 <div
                   key={client.id}
@@ -115,7 +121,9 @@ export function FreelanceTab({
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-[16.5px] font-bold text-ink">{client.name}</span>
-                      {outstanding > 0 && <Badge variant="amber">Owes {formatCurrency(outstanding, currency)}</Badge>}
+                      {remaining > 0 && (
+                        <Badge variant="amber">Owes {formatCurrency(remaining, currency)}</Badge>
+                      )}
                     </div>
                     {client.notes && <div className="mt-0.5 text-[13.5px] text-muted">{client.notes}</div>}
                     <div className="mt-3 flex gap-3.5">
@@ -146,16 +154,20 @@ export function FreelanceTab({
       <div className="flex flex-col gap-6">
         <div className="rounded-[18px] border border-line bg-surface p-6 shadow-north-sm">
           <div className="mb-5 text-[11px] font-extrabold uppercase tracking-widest text-faint">
-            Money in
+            Money
           </div>
           <div className="flex flex-col gap-2.5 text-[14px]">
             <div className="flex justify-between">
-              <span className="text-muted">Paid</span>
-              <span className="font-bold text-ink">{formatCurrency(paidTotal, currency)}</span>
+              <span className="text-muted">Total agreed</span>
+              <span className="font-bold text-ink">{formatCurrency(totalAgreed, currency)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted">Outstanding</span>
-              <span className="font-bold text-amber">{formatCurrency(outstandingTotal, currency)}</span>
+              <span className="text-muted">Received</span>
+              <span className="font-bold text-teal">{formatCurrency(totalReceived, currency)}</span>
+            </div>
+            <div className="flex justify-between border-t border-line-2 pt-2.5">
+              <span className="text-muted">Remaining</span>
+              <span className="font-bold text-amber">{formatCurrency(totalRemaining, currency)}</span>
             </div>
           </div>
         </div>
@@ -168,44 +180,61 @@ export function FreelanceTab({
             <p className="text-[13.5px] text-muted">No invoices yet.</p>
           ) : (
             <div className="flex flex-col gap-4">
-              {invoices.slice(0, 6).map((invoice) => (
-                <div key={invoice.id} className="flex items-center gap-3">
-                  <span
-                    className={
-                      "h-2 w-2 shrink-0 rounded-full " +
-                      (invoice.status === "paid"
-                        ? "bg-teal"
-                        : invoice.status === "overdue"
+              {invoices.slice(0, 6).map((invoice) => {
+                const amount = Number(invoice.amount);
+                const paymentState = invoicePaymentState(amount, invoice.status, invoice.paid_amount);
+                const received = invoiceReceived(amount, invoice.status, invoice.paid_amount);
+                const remaining = invoiceRemaining(amount, invoice.status, invoice.paid_amount);
+                return (
+                  <div key={invoice.id} className="flex items-start gap-3">
+                    <span
+                      className={
+                        "mt-1.5 h-2 w-2 shrink-0 rounded-full " +
+                        (invoice.status === "overdue"
                           ? "bg-mahogany"
-                          : "bg-amber")
-                    }
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[14.5px] font-semibold text-ink">{invoice.title}</div>
-                    <div className="text-[12px] text-faint">
-                      {invoice.client?.name ?? "No client"} ·{" "}
-                      {invoice.status === "paid" && invoice.paid_on
-                        ? `paid ${format(parseISO(invoice.paid_on), "d MMM")}`
-                        : invoice.status}
+                          : paymentState === "paid"
+                            ? "bg-teal"
+                            : "bg-amber")
+                      }
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[14.5px] font-semibold text-ink">{invoice.title}</div>
+                      <div className="text-[12px] text-faint">
+                        {invoice.client?.name ?? "No client"} ·{" "}
+                        {invoice.status === "paid" && invoice.paid_on
+                          ? `paid ${format(parseISO(invoice.paid_on), "d MMM")}`
+                          : invoice.status}
+                      </div>
+                      {paymentState === "partial" && (
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                          <Badge variant="amber">{PAYMENT_LABEL.partial}</Badge>
+                          <span className="text-[11.5px] text-muted">
+                            Paid {formatCurrency(received, currency)} · Remaining{" "}
+                            {formatCurrency(remaining, currency)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="mt-2 flex gap-3.5">
+                        <button
+                          className="text-[12px] font-bold text-faint hover:text-teal"
+                          onClick={() => openEditInvoice(invoice)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="text-[12px] font-bold text-faint hover:text-mahogany"
+                          onClick={() => handleDeleteInvoice(invoice.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
-                    <div className="mt-2 flex gap-3.5">
-                      <button
-                        className="text-[12px] font-bold text-faint hover:text-teal"
-                        onClick={() => openEditInvoice(invoice)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="text-[12px] font-bold text-faint hover:text-mahogany"
-                        onClick={() => handleDeleteInvoice(invoice.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    <span className="shrink-0 text-[14.5px] font-bold text-ink">
+                      {formatCurrency(amount, currency)}
+                    </span>
                   </div>
-                  <span className="text-[14.5px] font-bold text-ink">{formatCurrency(Number(invoice.amount), currency)}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
           <AddRowButton onClick={() => { setEditingInvoice(undefined); setInvoiceDialogOpen(true); }}>

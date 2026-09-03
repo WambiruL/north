@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { AddRowButton, RowActions } from "@/components/work/shared";
 import { formatCurrency } from "@/lib/currency";
+import { invoiceRemaining } from "@/lib/invoice-money";
 import { FocusTaskDialog } from "@/components/work/focus-task-dialog";
 import { toggleFocusTask, removeFocusTask } from "@/server/actions/work";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -50,7 +51,10 @@ export function TodayTab({
     .sort((a, b) => (a.due_date! < b.due_date! ? -1 : 1))
     .slice(0, 6);
   const outstandingInvoices = invoices.filter((i) => i.status !== "paid").slice(0, 6);
-  const outstandingTotal = outstandingInvoices.reduce((sum, i) => sum + Number(i.amount), 0);
+  const outstandingTotal = invoices.reduce(
+    (sum, i) => sum + invoiceRemaining(Number(i.amount), i.status, i.paid_amount),
+    0,
+  );
 
   function openNew(isPriority: boolean) {
     setEditing(undefined);
@@ -200,7 +204,9 @@ export function TodayTab({
                         : STATUS_LABEL[invoice.status]}
                     </div>
                   </div>
-                  <span className="text-[14.5px] font-bold text-ink">{formatCurrency(Number(invoice.amount), currency)}</span>
+                  <span className="text-[14.5px] font-bold text-ink">
+                    {formatCurrency(invoiceRemaining(Number(invoice.amount), invoice.status, invoice.paid_amount), currency)}
+                  </span>
                 </div>
               ))}
             </div>

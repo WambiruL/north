@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import type { Tables } from "@/types/database.types";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatCurrency } from "@/lib/currency";
+import { invoiceRemaining } from "@/lib/invoice-money";
 import { TodayTab } from "@/components/work/tabs/today-tab";
 import { ProjectsTab } from "@/components/work/tabs/projects-tab";
 import { FreelanceTab } from "@/components/work/tabs/freelance-tab";
-import { EmploymentTab } from "@/components/work/tabs/employment-tab";
 import { OpportunitiesTab } from "@/components/work/tabs/opportunities-tab";
 import { NotesTab } from "@/components/work/tabs/notes-tab";
 import { NetworkTab } from "@/components/work/tabs/network-tab";
@@ -41,16 +41,21 @@ type Activity = Tables<"activities">;
 type IncomeSource = Tables<"income_sources">;
 
 const TABS = [
-  { value: "today", label: "Today" },
+  { value: "overview", label: "Overview" },
   { value: "projects", label: "Projects" },
-  { value: "freelance", label: "Freelance" },
-  { value: "employment", label: "Employment" },
+  { value: "clients", label: "Clients & invoices" },
   { value: "opportunities", label: "Opportunities" },
+  { value: "more", label: "More" },
+] as const;
+
+const MORE_TABS = [
   { value: "notes", label: "Notes" },
   { value: "network", label: "Network" },
   { value: "wins", label: "Wins" },
   { value: "analytics", label: "Analytics" },
 ] as const;
+
+type MoreTabValue = (typeof MORE_TABS)[number]["value"];
 
 type TabValue = (typeof TABS)[number]["value"];
 
@@ -85,7 +90,8 @@ export function WorkClient({
   analytics: WorkAnalytics;
   autoOpen: "project" | "task" | null;
 }) {
-  const [tab, setTab] = useState<TabValue>("today");
+  const [tab, setTab] = useState<TabValue>("overview");
+  const [moreTab, setMoreTab] = useState<MoreTabValue>("notes");
   const [captureOpen, setCaptureOpen] = useState(false);
 
   const [projectDialogOpen, setProjectDialogOpen] = useState(
@@ -109,7 +115,10 @@ export function WorkClient({
   }, [autoOpen]);
 
   const projectOptions = projects.map((p) => ({ id: p.id, name: p.name }));
-  const outstanding = invoices.filter((i) => i.status !== "paid").reduce((s, i) => s + Number(i.amount), 0);
+  const outstanding = invoices.reduce(
+    (s, i) => s + invoiceRemaining(Number(i.amount), i.status, i.paid_amount),
+    0,
+  );
   const openOpportunities = opportunities.filter(
     (o) => o.kind !== "job" && !["won", "lost", "rejected"].includes(o.status),
   ).length;
@@ -171,13 +180,13 @@ export function WorkClient({
           ))}
         </TabsList>
 
-        <TabsContent value="today">
+        <TabsContent value="overview">
           <TodayTab tasks={focusTasks} invoices={invoices} projects={projectOptions} currency={currency} />
         </TabsContent>
         <TabsContent value="projects">
           <ProjectsTab projects={projects} clients={clients.map((c) => ({ id: c.id, name: c.name }))} />
         </TabsContent>
-        <TabsContent value="freelance">
+        <TabsContent value="clients">
           <FreelanceTab
             clients={clients}
             invoices={invoices}
@@ -186,27 +195,35 @@ export function WorkClient({
             currency={currency}
           />
         </TabsContent>
-        <TabsContent value="employment">
-          <EmploymentTab
-            applications={opportunities.filter((o) => o.kind === "job")}
+        <TabsContent value="opportunities">
+          <OpportunitiesTab
+            opportunities={opportunities}
             currentEmployment={currentEmployment}
             currency={currency}
           />
         </TabsContent>
-        <TabsContent value="opportunities">
-          <OpportunitiesTab opportunities={opportunities} />
-        </TabsContent>
-        <TabsContent value="notes">
-          <NotesTab notes={notes} projects={projectOptions} />
-        </TabsContent>
-        <TabsContent value="network">
-          <NetworkTab contacts={contacts} />
-        </TabsContent>
-        <TabsContent value="wins">
-          <WinsTab wins={wins} />
-        </TabsContent>
-        <TabsContent value="analytics">
-          <AnalyticsTab analytics={analytics} currency={currency} />
+        <TabsContent value="more">
+          <Tabs value={moreTab} onValueChange={(v) => setMoreTab(v as MoreTabValue)}>
+            <TabsList className="flex flex-wrap">
+              {MORE_TABS.map((t) => (
+                <TabsTrigger key={t.value} value={t.value}>
+                  {t.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <TabsContent value="notes">
+              <NotesTab notes={notes} projects={projectOptions} />
+            </TabsContent>
+            <TabsContent value="network">
+              <NetworkTab contacts={contacts} />
+            </TabsContent>
+            <TabsContent value="wins">
+              <WinsTab wins={wins} />
+            </TabsContent>
+            <TabsContent value="analytics">
+              <AnalyticsTab analytics={analytics} currency={currency} />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
 

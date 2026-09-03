@@ -48,17 +48,23 @@ export type OpportunityInput = z.infer<typeof opportunitySchema>;
 
 export const invoiceStatuses = ["draft", "sent", "paid", "overdue"] as const;
 
-export const invoiceSchema = z.object({
-  title: z.string().min(1, "Title is required").max(200),
-  clientId: z.string().uuid().optional().nullable(),
-  workProjectId: z.string().uuid().optional().nullable(),
-  amount: z.coerce.number().positive("Amount must be greater than 0"),
-  status: z.enum(invoiceStatuses).default("sent"),
-  issuedOn: z.string().min(1, "Pick a date"),
-  dueOn: z.string().optional().nullable(),
-  paidOn: z.string().optional().nullable(),
-  notes: z.string().max(4000).optional(),
-});
+export const invoiceSchema = z
+  .object({
+    title: z.string().min(1, "Title is required").max(200),
+    clientId: z.string().uuid().optional().nullable(),
+    workProjectId: z.string().uuid().optional().nullable(),
+    amount: z.coerce.number().positive("Amount must be greater than 0"),
+    status: z.enum(invoiceStatuses).default("sent"),
+    issuedOn: z.string().min(1, "Pick a date"),
+    dueOn: z.string().optional().nullable(),
+    paidOn: z.string().optional().nullable(),
+    paidAmount: z.coerce.number().min(0).optional().nullable(),
+    notes: z.string().max(4000).optional(),
+  })
+  .refine((v) => v.paidAmount == null || v.paidAmount <= v.amount, {
+    message: "Can't be more than the invoice amount",
+    path: ["paidAmount"],
+  });
 export type InvoiceInput = z.infer<typeof invoiceSchema>;
 
 export const winSchema = z.object({
