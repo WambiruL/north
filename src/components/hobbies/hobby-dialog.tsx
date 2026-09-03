@@ -25,6 +25,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ImageUpload } from "@/components/hobbies/shared/image-upload";
 
 type Hobby = Tables<"hobbies">;
 
@@ -114,10 +115,16 @@ export function HobbyDialog({ open, onOpenChange, hobby, initialKind }: HobbyDia
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="coverUrl">Cover image URL</Label>
-            <Input id="coverUrl" placeholder="Paste an image URL" {...register("coverUrl")} />
-          </div>
+          <Controller
+            control={control}
+            name="coverUrl"
+            render={({ field }) => (
+              <div className="flex flex-col gap-1.5">
+                <Label>Cover (optional)</Label>
+                <ImageUpload value={field.value} onChange={(url) => field.onChange(url ?? undefined)} aspect="aspect-[3/1]" />
+              </div>
+            )}
+          />
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="goal">Goal</Label>

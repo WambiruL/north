@@ -1,30 +1,26 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserAndProfile } from "@/services/profile";
-import { listHobbiesWithCounts, getHobbyDetail, type HobbyDetail } from "@/services/hobbies";
+import { listHobbiesWithCounts } from "@/services/hobbies";
+import { getHobbyPreview, type HobbyPreview } from "@/services/hobby-previews";
 import { HobbiesClient } from "@/components/hobbies/hobbies-client";
 
 export const metadata: Metadata = { title: "Hobbies" };
 
-export default async function HobbiesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ hobby?: string }>;
-}) {
-  const { hobby } = await searchParams;
+export default async function HobbiesPage() {
   const supabase = await createClient();
   const user = (await getCurrentUserAndProfile())?.user ?? null;
 
   const hobbies = user ? await listHobbiesWithCounts(supabase, user.id) : [];
 
-  const details = user
-    ? await Promise.all(hobbies.map((h) => getHobbyDetail(supabase, user.id, h.id)))
-    : [];
-
-  const detailById: Record<string, HobbyDetail> = {};
-  for (const detail of details) {
-    if (detail) detailById[detail.hobby.id] = detail;
+  const previews: Record<string, HobbyPreview> = {};
+  if (user) {
+    await Promise.all(
+      hobbies.map(async (hobby) => {
+        previews[hobby.id] = await getHobbyPreview(supabase, user.id, hobby);
+      }),
+    );
   }
 
-  return <HobbiesClient hobbies={hobbies} detailById={detailById} initialOpenId={hobby} />;
+  return <HobbiesClient hobbies={hobbies} previews={previews} />;
 }

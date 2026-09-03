@@ -314,6 +314,93 @@ export const HOBBY_TEMPLATES: Record<string, HobbyTemplate> = {
       { kind: "countMonth", label: "Sessions this month" },
     ],
   },
+  travel: {
+    key: "travel",
+    label: "Travel",
+    sub: "Places you've been, and places you want to go.",
+    entryVerb: "Add a place",
+    entriesLabel: "Places",
+    currentLabel: "Latest",
+    projectsLabel: "Places",
+    fields: [],
+    statFacts: [],
+  },
+  film: {
+    key: "film",
+    label: "Film & TV",
+    sub: "What you're watching, and what you thought of it.",
+    entryVerb: "Log a film",
+    entriesLabel: "Watch log",
+    currentLabel: "Currently watching",
+    primaryField: "title",
+    secondaryField: "year",
+    projectsLabel: "Watchlist",
+    fields: [
+      { key: "title", label: "Title", type: "text", required: true },
+      { key: "year", label: "Year", type: "text" },
+      { key: "rating", label: "Rating", type: "rating" },
+    ],
+    statFacts: [
+      { kind: "countMonth", label: "Watched this month" },
+      { kind: "countTotal", label: "Total watched" },
+    ],
+  },
+  hiking: {
+    key: "hiking",
+    label: "Hiking & outdoors",
+    sub: "Trails walked, and trails still on the list.",
+    entryVerb: "Log a hike",
+    entriesLabel: "Hike log",
+    currentLabel: "Last hike",
+    primaryField: "trail",
+    secondaryField: "location",
+    projectsLabel: "Want to do",
+    fields: [
+      { key: "trail", label: "Trail", type: "text" },
+      { key: "location", label: "Location", type: "text" },
+      { key: "distanceKm", label: "Distance", type: "number", unit: "km" },
+    ],
+    statFacts: [
+      { kind: "countTotal", label: "Hikes completed" },
+      { kind: "sumMonth", field: "distanceKm", label: "km this month", unit: "km", decimals: 1 },
+    ],
+  },
+  dance: {
+    key: "dance",
+    logsDuration: true,
+    label: "Dance",
+    sub: "Routines you're learning, and practice as it happens.",
+    entryVerb: "Log practice",
+    entriesLabel: "Practice log",
+    currentLabel: "Working on",
+    primaryField: "routine",
+    secondaryField: "style",
+    projectsLabel: "Routines",
+    fields: [
+      { key: "routine", label: "Routine", type: "text" },
+      { key: "style", label: "Style", type: "text" },
+    ],
+    statFacts: [
+      { kind: "countMonth", label: "Sessions this month" },
+      { kind: "sumMonth", field: "duration_minutes", label: "Minutes this month" },
+    ],
+  },
+  fashion: {
+    key: "fashion",
+    label: "Fashion",
+    sub: "Pieces, outfits, and looks you love.",
+    entryVerb: "Add a piece",
+    entriesLabel: "Pieces",
+    currentLabel: "Latest",
+    primaryField: "item",
+    secondaryField: "category",
+    projectsLabel: "Wishlist",
+    fields: [
+      { key: "item", label: "Item", type: "text" },
+      { key: "category", label: "Category", type: "text" },
+    ],
+    statFacts: [{ kind: "countTotal", label: "Pieces logged" }],
+  },
   collecting: {
     key: "collecting",
     label: "Collecting",
@@ -351,22 +438,31 @@ export const HOBBY_TEMPLATES: Record<string, HobbyTemplate> = {
 
 export const HOBBY_TEMPLATE_LIST: HobbyTemplate[] = [
   HOBBY_TEMPLATES.reading,
-  HOBBY_TEMPLATES.running,
-  HOBBY_TEMPLATES.gym,
-  HOBBY_TEMPLATES.cooking,
-  HOBBY_TEMPLATES.gardening,
-  HOBBY_TEMPLATES.music,
   HOBBY_TEMPLATES.photography,
   HOBBY_TEMPLATES.visual_art,
+  HOBBY_TEMPLATES.music,
+  HOBBY_TEMPLATES.travel,
+  HOBBY_TEMPLATES.running,
+  HOBBY_TEMPLATES.cooking,
   HOBBY_TEMPLATES.writing,
+  HOBBY_TEMPLATES.film,
+  HOBBY_TEMPLATES.gardening,
   HOBBY_TEMPLATES.gaming,
+  HOBBY_TEMPLATES.hiking,
   HOBBY_TEMPLATES.crafting,
-  HOBBY_TEMPLATES.yoga_meditation,
-  HOBBY_TEMPLATES.language_learning,
-  HOBBY_TEMPLATES.collecting,
+  HOBBY_TEMPLATES.dance,
+  HOBBY_TEMPLATES.fashion,
   HOBBY_TEMPLATES.other,
 ];
 
 export function getHobbyTemplate(kind: string | null | undefined): HobbyTemplate {
   return (kind && HOBBY_TEMPLATES[kind]) || HOBBY_TEMPLATES.other;
+}
+
+/** Kinds with a fully bespoke page/data-model instead of the shared flexible template. */
+export const BESPOKE_HOBBY_KINDS = ["reading", "photography", "visual_art", "travel", "running", "cooking"] as const;
+export type BespokeHobbyKind = (typeof BESPOKE_HOBBY_KINDS)[number];
+
+export function isBespokeHobbyKind(kind: string | null | undefined): kind is BespokeHobbyKind {
+  return !!kind && (BESPOKE_HOBBY_KINDS as readonly string[]).includes(kind);
 }

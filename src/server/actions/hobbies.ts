@@ -12,9 +12,7 @@ import {
   hobbyNoteSchema,
   type HobbyNoteInput,
 } from "@/lib/validation/hobbies";
-import { inspirationItemSchema, type InspirationItemInput } from "@/lib/validation/creative";
 import * as hobbyService from "@/services/hobbies";
-import * as creativeService from "@/services/creative";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -133,20 +131,25 @@ export async function removeHobbyNote(id: string) {
   revalidatePath("/hobbies");
 }
 
-export async function saveHobbyInspiration(hobbyId: string, input: InspirationItemInput) {
-  const parsed = inspirationItemSchema.safeParse(input);
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-  }
-
+export async function uploadHobbyMedia(formData: FormData) {
   const { supabase, userId } = await requireUser();
 
-  try {
-    await creativeService.createInspirationItem(supabase, userId, { ...parsed.data, hobbyId });
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : "Something went wrong" };
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Choose an image file" };
+  }
+  if (!file.type.startsWith("image/")) {
+    return { error: "That file isn't an image" };
   }
 
-  revalidatePath("/hobbies");
-  return {};
+  const extension = file.name.split(".").pop() || "jpg";
+  const path = `${userId}/hobbies/${crypto.randomUUID()}.${extension}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("media")
+    .upload(path, file, { contentType: file.type });
+  if (uploadError) return { error: uploadError.message };
+
+  const { data } = supabase.storage.from("media").getPublicUrl(path);
+  return { url: data.publicUrl };
 }

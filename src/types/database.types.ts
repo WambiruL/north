@@ -47,6 +47,115 @@ export type Database = {
         }
         Relationships: []
       }
+      artworks: {
+        Row: {
+          created_at: string
+          dimensions: string | null
+          hobby_id: string
+          id: string
+          image_url: string | null
+          medium: string | null
+          notes: string | null
+          occurred_on: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dimensions?: string | null
+          hobby_id: string
+          id?: string
+          image_url?: string | null
+          medium?: string | null
+          notes?: string | null
+          occurred_on?: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dimensions?: string | null
+          hobby_id?: string
+          id?: string
+          image_url?: string | null
+          medium?: string | null
+          notes?: string | null
+          occurred_on?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artworks_hobby_id_fkey"
+            columns: ["hobby_id"]
+            isOneToOne: false
+            referencedRelation: "hobbies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      books: {
+        Row: {
+          author: string | null
+          cover_url: string | null
+          created_at: string
+          finished_on: string | null
+          hobby_id: string
+          id: string
+          notes: string | null
+          rating: number | null
+          started_on: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author?: string | null
+          cover_url?: string | null
+          created_at?: string
+          finished_on?: string | null
+          hobby_id: string
+          id?: string
+          notes?: string | null
+          rating?: number | null
+          started_on?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author?: string | null
+          cover_url?: string | null
+          created_at?: string
+          finished_on?: string | null
+          hobby_id?: string
+          id?: string
+          notes?: string | null
+          rating?: number | null
+          started_on?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "books_hobby_id_fkey"
+            columns: ["hobby_id"]
+            isOneToOne: false
+            referencedRelation: "hobbies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bucket_list_items: {
         Row: {
           category: string | null
@@ -338,6 +447,60 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      cooking_logs: {
+        Row: {
+          created_at: string
+          dish_name: string
+          hobby_id: string
+          id: string
+          note: string | null
+          occurred_on: string
+          photo_url: string | null
+          rating: number | null
+          recipe_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dish_name: string
+          hobby_id: string
+          id?: string
+          note?: string | null
+          occurred_on?: string
+          photo_url?: string | null
+          rating?: number | null
+          recipe_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dish_name?: string
+          hobby_id?: string
+          id?: string
+          note?: string | null
+          occurred_on?: string
+          photo_url?: string | null
+          rating?: number | null
+          recipe_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cooking_logs_hobby_id_fkey"
+            columns: ["hobby_id"]
+            isOneToOne: false
+            referencedRelation: "hobbies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cooking_logs_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       courses: {
         Row: {
@@ -1533,6 +1696,92 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_series: {
+        Row: {
+          created_at: string
+          hobby_id: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hobby_id: string
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hobby_id?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_series_hobby_id_fkey"
+            columns: ["hobby_id"]
+            isOneToOne: false
+            referencedRelation: "hobbies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          hobby_id: string
+          id: string
+          image_url: string
+          is_favorite: boolean
+          location: string | null
+          occurred_on: string
+          series_id: string | null
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          hobby_id: string
+          id?: string
+          image_url: string
+          is_favorite?: boolean
+          location?: string | null
+          occurred_on?: string
+          series_id?: string | null
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          hobby_id?: string
+          id?: string
+          image_url?: string
+          is_favorite?: boolean
+          location?: string | null
+          occurred_on?: string
+          series_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photos_hobby_id_fkey"
+            columns: ["hobby_id"]
+            isOneToOne: false
+            referencedRelation: "hobbies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photos_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "photo_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pinned_spaces: {
         Row: {
           created_at: string
@@ -1601,6 +1850,150 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      reading_logs: {
+        Row: {
+          book_id: string
+          created_at: string
+          id: string
+          note: string | null
+          occurred_on: string
+          page: number | null
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          occurred_on?: string
+          page?: number | null
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          occurred_on?: string
+          page?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_logs_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipes: {
+        Row: {
+          cook_minutes: number | null
+          created_at: string
+          hobby_id: string
+          id: string
+          ingredients: string | null
+          method: string | null
+          name: string
+          notes: string | null
+          photo_url: string | null
+          prep_minutes: number | null
+          rating: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cook_minutes?: number | null
+          created_at?: string
+          hobby_id: string
+          id?: string
+          ingredients?: string | null
+          method?: string | null
+          name: string
+          notes?: string | null
+          photo_url?: string | null
+          prep_minutes?: number | null
+          rating?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cook_minutes?: number | null
+          created_at?: string
+          hobby_id?: string
+          id?: string
+          ingredients?: string | null
+          method?: string | null
+          name?: string
+          notes?: string | null
+          photo_url?: string | null
+          prep_minutes?: number | null
+          rating?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipes_hobby_id_fkey"
+            columns: ["hobby_id"]
+            isOneToOne: false
+            referencedRelation: "hobbies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      runs: {
+        Row: {
+          created_at: string
+          distance_km: number
+          duration_minutes: number
+          feeling: string | null
+          hobby_id: string
+          id: string
+          notes: string | null
+          occurred_on: string
+          route: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          distance_km: number
+          duration_minutes: number
+          feeling?: string | null
+          hobby_id: string
+          id?: string
+          notes?: string | null
+          occurred_on?: string
+          route?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          distance_km?: number
+          duration_minutes?: number
+          feeling?: string | null
+          hobby_id?: string
+          id?: string
+          notes?: string | null
+          occurred_on?: string
+          route?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "runs_hobby_id_fkey"
+            columns: ["hobby_id"]
+            isOneToOne: false
+            referencedRelation: "hobbies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       savings_goals: {
         Row: {
@@ -1733,6 +2126,59 @@ export type Database = {
             columns: ["work_project_id"]
             isOneToOne: false
             referencedRelation: "work_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      travel_entries: {
+        Row: {
+          created_at: string
+          hobby_id: string
+          id: string
+          image_urls: string[]
+          location: string | null
+          notes: string | null
+          occurred_on: string | null
+          reason: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hobby_id: string
+          id?: string
+          image_urls?: string[]
+          location?: string | null
+          notes?: string | null
+          occurred_on?: string | null
+          reason?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hobby_id?: string
+          id?: string
+          image_urls?: string[]
+          location?: string | null
+          notes?: string | null
+          occurred_on?: string | null
+          reason?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_entries_hobby_id_fkey"
+            columns: ["hobby_id"]
+            isOneToOne: false
+            referencedRelation: "hobbies"
             referencedColumns: ["id"]
           },
         ]
