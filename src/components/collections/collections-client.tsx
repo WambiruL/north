@@ -54,32 +54,34 @@ function ItemRow({
   onDelete: (id: string, title: string) => void;
 }) {
   return (
-    <div className="flex items-start gap-3.5 rounded-[13px] px-2.5 py-3.5 transition-colors hover:bg-surface-2">
-      <Checkbox checked={item.is_done} onChange={() => onToggle(item)} className="mt-0.5" />
-      <div className="min-w-0 flex-1">
-        <div
-          className={
-            item.is_done
-              ? "text-[14px] font-semibold text-faint line-through"
-              : "text-[14px] font-semibold text-ink"
-          }
-        >
-          {item.url ? (
-            <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-              {item.title}
-            </a>
-          ) : (
-            item.title
-          )}
+    <div className="flex flex-col gap-2 rounded-[13px] px-2.5 py-3.5 transition-colors hover:bg-surface-2 sm:flex-row sm:items-start sm:gap-3.5">
+      <div className="flex min-w-0 flex-1 items-start gap-3.5">
+        <Checkbox checked={item.is_done} onChange={() => onToggle(item)} className="mt-0.5 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div
+            className={
+              item.is_done
+                ? "text-[14px] font-semibold text-faint line-through"
+                : "text-[14px] font-semibold text-ink"
+            }
+          >
+            {item.url ? (
+              <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                {item.title}
+              </a>
+            ) : (
+              item.title
+            )}
+          </div>
+          {item.note && <div className="mt-1 text-[12.5px] text-faint">{item.note}</div>}
         </div>
-        {item.note && <div className="mt-1 text-[12.5px] text-faint">{item.note}</div>}
       </div>
-      {item.priority && (
-        <Badge variant={PRIORITY_VARIANT[item.priority]} className="mt-0.5 shrink-0">
-          {PRIORITY_LABEL[item.priority] ?? item.priority}
-        </Badge>
-      )}
-      <div className="flex shrink-0 gap-3 pt-1">
+      <div className="flex shrink-0 items-center gap-3 pl-9 sm:pl-0 sm:pt-1">
+        {item.priority && (
+          <Badge variant={PRIORITY_VARIANT[item.priority]} className="shrink-0">
+            {PRIORITY_LABEL[item.priority] ?? item.priority}
+          </Badge>
+        )}
         <button
           type="button"
           onClick={() => onEdit(item)}

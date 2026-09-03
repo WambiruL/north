@@ -1,4 +1,4 @@
-import { usd } from "@/components/work/shared";
+import { formatCurrency } from "@/lib/currency";
 
 export interface WorkAnalytics {
   activeProjects: number;
@@ -12,18 +12,18 @@ export interface WorkAnalytics {
   openOpportunities: number;
 }
 
-export function AnalyticsTab({ analytics }: { analytics: WorkAnalytics }) {
+export function AnalyticsTab({ analytics, currency }: { analytics: WorkAnalytics; currency: string }) {
   const tiles: { head: string; sub: string }[] = [
     {
       head: `${analytics.activeProjects} active`,
       sub: `${analytics.totalProjects} project${analytics.totalProjects === 1 ? "" : "s"} total, across every status.`,
     },
     {
-      head: usd.format(analytics.outstanding),
+      head: formatCurrency(analytics.outstanding, currency),
       sub: "Invoiced but not yet paid.",
     },
     {
-      head: usd.format(analytics.paidTotal),
+      head: formatCurrency(analytics.paidTotal, currency),
       sub: "Paid, all time.",
     },
     {

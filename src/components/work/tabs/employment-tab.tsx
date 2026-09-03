@@ -8,7 +8,8 @@ import { Briefcase } from "lucide-react";
 import type { Tables } from "@/types/database.types";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { AddRowButton, usd } from "@/components/work/shared";
+import { AddRowButton } from "@/components/work/shared";
+import { formatCurrency } from "@/lib/currency";
 import { OpportunityDialog } from "@/components/work/opportunity-dialog";
 import { removeOpportunity } from "@/server/actions/work";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -19,9 +20,11 @@ type IncomeSource = Tables<"income_sources">;
 export function EmploymentTab({
   applications,
   currentEmployment,
+  currency,
 }: {
   applications: Opportunity[];
   currentEmployment: IncomeSource | null;
+  currency: string;
 }) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -136,7 +139,7 @@ export function EmploymentTab({
               )}
               <div className="flex justify-between text-[14px]">
                 <span className="text-muted">{currentEmployment.frequency === "monthly" ? "Monthly" : currentEmployment.frequency}</span>
-                <span className="font-bold text-ink">{usd.format(Number(currentEmployment.amount))}</span>
+                <span className="font-bold text-ink">{formatCurrency(Number(currentEmployment.amount), currency)}</span>
               </div>
             </>
           ) : (

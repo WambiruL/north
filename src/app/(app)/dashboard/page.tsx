@@ -30,7 +30,8 @@ export default async function DashboardPage() {
 
   const supabase = await createClient();
   const timezone = profile?.timezone || "UTC";
-  const data = await getDashboardData(supabase, user.id, firstName, timezone);
+  const currency = profile?.currency || "USD";
+  const data = await getDashboardData(supabase, user.id, firstName, timezone, currency);
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-10">

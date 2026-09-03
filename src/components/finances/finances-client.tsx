@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { Landmark, Pencil, PiggyBank, Plus, Trash2, Wallet } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
 import type { Tables } from "@/types/database.types";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,14 +30,13 @@ const KIND_LABELS: Record<string, string> = {
   investment: "Investment",
 };
 
-const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-
 export function FinancesClient({
   accounts,
   transactions,
   savingsGoals,
   workProjects,
   snapshot,
+  currency,
   autoOpenTransaction,
 }: {
   accounts: Account[];
@@ -44,6 +44,7 @@ export function FinancesClient({
   savingsGoals: SavingsGoal[];
   workProjects: ProjectOption[];
   snapshot: { totalBalance: number; monthIncome: number; monthExpense: number };
+  currency: string;
   autoOpenTransaction: boolean;
 }) {
   const router = useRouter();
@@ -101,7 +102,7 @@ export function FinancesClient({
             Total balance
           </div>
           <div className="mt-2 text-[26px] font-bold tracking-tight text-ink">
-            {usd.format(snapshot.totalBalance)}
+            {formatCurrency(snapshot.totalBalance, currency)}
           </div>
         </Card>
         <Card className="p-5">
@@ -109,7 +110,7 @@ export function FinancesClient({
             This month · in
           </div>
           <div className="mt-2 text-[26px] font-bold tracking-tight text-teal">
-            {usd.format(snapshot.monthIncome)}
+            {formatCurrency(snapshot.monthIncome, currency)}
           </div>
         </Card>
         <Card className="p-5">
@@ -117,7 +118,7 @@ export function FinancesClient({
             This month · out
           </div>
           <div className="mt-2 text-[26px] font-bold tracking-tight text-mahogany">
-            {usd.format(snapshot.monthExpense)}
+            {formatCurrency(snapshot.monthExpense, currency)}
           </div>
         </Card>
       </div>
@@ -160,7 +161,7 @@ export function FinancesClient({
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   <span className="mr-1 text-[15px] font-bold text-ink">
-                    {usd.format(Number(account.balance))}
+                    {formatCurrency(Number(account.balance), account.currency || currency)}
                   </span>
                   <Button
                     variant="ghost"
@@ -229,7 +230,7 @@ export function FinancesClient({
                     }
                   >
                     {t.amount >= 0 ? "+" : ""}
-                    {usd.format(t.amount)}
+                    {formatCurrency(t.amount, currency)}
                   </span>
                   <Button
                     variant="ghost"
@@ -320,8 +321,8 @@ export function FinancesClient({
                 </div>
                 <Progress value={goal.progress} tone="amber" />
                 <div className="flex items-center justify-between text-[12px] text-muted">
-                  <span>{usd.format(Number(goal.saved_amount))}</span>
-                  <span>{usd.format(Number(goal.target_amount))}</span>
+                  <span>{formatCurrency(Number(goal.saved_amount), currency)}</span>
+                  <span>{formatCurrency(Number(goal.target_amount), currency)}</span>
                 </div>
               </Card>
             ))}

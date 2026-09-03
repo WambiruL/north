@@ -23,7 +23,9 @@ export default async function WorkPage({
 }) {
   const { new: newParam } = await searchParams;
   const supabase = await createClient();
-  const user = (await getCurrentUserAndProfile())?.user ?? null;
+  const session = await getCurrentUserAndProfile();
+  const user = session?.user ?? null;
+  const currency = session?.profile?.currency || "USD";
 
   if (!user) {
     return (
@@ -38,6 +40,7 @@ export default async function WorkPage({
         contacts={[]}
         recentActivity={[]}
         currentEmployment={null}
+        currency={currency}
         analytics={{
           activeProjects: 0,
           totalProjects: 0,
@@ -106,6 +109,7 @@ export default async function WorkPage({
       contacts={contacts}
       recentActivity={recentActivity ?? []}
       currentEmployment={incomeSources?.[0] ?? null}
+      currency={currency}
       analytics={analytics}
       autoOpen={autoOpen}
     />

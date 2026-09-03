@@ -8,7 +8,8 @@ import type { Tables } from "@/types/database.types";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
-import { AddRowButton, RowActions, usd } from "@/components/work/shared";
+import { AddRowButton, RowActions } from "@/components/work/shared";
+import { formatCurrency } from "@/lib/currency";
 import { FocusTaskDialog } from "@/components/work/focus-task-dialog";
 import { toggleFocusTask, removeFocusTask } from "@/server/actions/work";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -30,10 +31,12 @@ export function TodayTab({
   tasks,
   invoices,
   projects,
+  currency,
 }: {
   tasks: Task[];
   invoices: Invoice[];
   projects: ProjectOption[];
+  currency: string;
 }) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -197,14 +200,14 @@ export function TodayTab({
                         : STATUS_LABEL[invoice.status]}
                     </div>
                   </div>
-                  <span className="text-[14.5px] font-bold text-ink">{usd.format(Number(invoice.amount))}</span>
+                  <span className="text-[14.5px] font-bold text-ink">{formatCurrency(Number(invoice.amount), currency)}</span>
                 </div>
               ))}
             </div>
           )}
           <div className="mt-5 flex justify-between border-t border-line-2 pt-4 text-[14px]">
             <span className="text-muted">Outstanding</span>
-            <span className="font-bold text-ink">{usd.format(outstandingTotal)}</span>
+            <span className="font-bold text-ink">{formatCurrency(outstandingTotal, currency)}</span>
           </div>
         </div>
       </div>

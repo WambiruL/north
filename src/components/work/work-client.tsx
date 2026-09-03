@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { Tables } from "@/types/database.types";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { usd } from "@/components/work/shared";
+import { formatCurrency } from "@/lib/currency";
 import { TodayTab } from "@/components/work/tabs/today-tab";
 import { ProjectsTab } from "@/components/work/tabs/projects-tab";
 import { FreelanceTab } from "@/components/work/tabs/freelance-tab";
@@ -67,6 +67,7 @@ export function WorkClient({
   contacts,
   recentActivity,
   currentEmployment,
+  currency,
   analytics,
   autoOpen,
 }: {
@@ -80,6 +81,7 @@ export function WorkClient({
   contacts: Contact[];
   recentActivity: Activity[];
   currentEmployment: IncomeSource | null;
+  currency: string;
   analytics: WorkAnalytics;
   autoOpen: "project" | "task" | null;
 }) {
@@ -113,11 +115,11 @@ export function WorkClient({
   ).length;
   const activeProjects = projects.filter((p) => p.status === "active").length;
 
-  const summary = `${activeProjects} project${activeProjects === 1 ? "" : "s"} live, ${openOpportunities} opportunit${openOpportunities === 1 ? "y" : "ies"} open, and ${usd.format(outstanding)} still owed to you.`;
+  const summary = `${activeProjects} project${activeProjects === 1 ? "" : "s"} live, ${openOpportunities} opportunit${openOpportunities === 1 ? "y" : "ies"} open, and ${formatCurrency(outstanding, currency)} still owed to you.`;
 
   const statTiles = [
     { label: "Active projects", value: String(activeProjects) },
-    { label: "Outstanding", value: usd.format(outstanding) },
+    { label: "Outstanding", value: formatCurrency(outstanding, currency) },
     { label: "Opportunities open", value: String(openOpportunities) },
   ];
 
@@ -170,7 +172,7 @@ export function WorkClient({
         </TabsList>
 
         <TabsContent value="today">
-          <TodayTab tasks={focusTasks} invoices={invoices} projects={projectOptions} />
+          <TodayTab tasks={focusTasks} invoices={invoices} projects={projectOptions} currency={currency} />
         </TabsContent>
         <TabsContent value="projects">
           <ProjectsTab projects={projects} clients={clients.map((c) => ({ id: c.id, name: c.name }))} />
@@ -181,12 +183,14 @@ export function WorkClient({
             invoices={invoices}
             projects={projectOptions}
             recentActivity={recentActivity}
+            currency={currency}
           />
         </TabsContent>
         <TabsContent value="employment">
           <EmploymentTab
             applications={opportunities.filter((o) => o.kind === "job")}
             currentEmployment={currentEmployment}
+            currency={currency}
           />
         </TabsContent>
         <TabsContent value="opportunities">
@@ -202,7 +206,7 @@ export function WorkClient({
           <WinsTab wins={wins} />
         </TabsContent>
         <TabsContent value="analytics">
-          <AnalyticsTab analytics={analytics} />
+          <AnalyticsTab analytics={analytics} currency={currency} />
         </TabsContent>
       </Tabs>
 

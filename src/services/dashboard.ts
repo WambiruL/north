@@ -8,6 +8,7 @@ import { listDreamsWithGoals } from "@/services/dream-life";
 import { listHobbiesWithCounts } from "@/services/hobbies";
 import { getRecentActivity } from "@/services/activity";
 import { hourInTimezone, dateISODaysAgoInTimezone } from "@/lib/timezone";
+import { formatCurrency } from "@/lib/currency";
 
 type Client = SupabaseClient<Database>;
 
@@ -19,7 +20,13 @@ function greetingFor(timezone: string, at: Date) {
   return "Good evening";
 }
 
-export async function getDashboardData(supabase: Client, userId: string, name: string, timezone: string) {
+export async function getDashboardData(
+  supabase: Client,
+  userId: string,
+  name: string,
+  timezone: string,
+  currency: string = "USD",
+) {
   const [
     todayCheckIn,
     projects,
@@ -103,9 +110,7 @@ export async function getDashboardData(supabase: Client, userId: string, name: s
     },
     {
       label: "Finances",
-      value: new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(
-        snapshot.totalBalance,
-      ),
+      value: formatCurrency(snapshot.totalBalance, currency),
       detail: `${snapshot.savingsGoals.length} savings goals`,
       href: "/finances",
     },

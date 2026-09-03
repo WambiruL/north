@@ -8,7 +8,8 @@ import { Users } from "lucide-react";
 import type { Tables } from "@/types/database.types";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { AddRowButton, usd } from "@/components/work/shared";
+import { AddRowButton } from "@/components/work/shared";
+import { formatCurrency } from "@/lib/currency";
 import { ClientDialog } from "@/components/work/client-dialog";
 import { InvoiceDialog } from "@/components/work/invoice-dialog";
 import { removeClient, removeInvoice } from "@/server/actions/work";
@@ -35,11 +36,13 @@ export function FreelanceTab({
   invoices,
   projects,
   recentActivity,
+  currency,
 }: {
   clients: ClientRow[];
   invoices: Invoice[];
   projects: ProjectOption[];
   recentActivity: Activity[];
+  currency: string;
 }) {
   const router = useRouter();
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
@@ -112,7 +115,7 @@ export function FreelanceTab({
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-[16.5px] font-bold text-ink">{client.name}</span>
-                      {outstanding > 0 && <Badge variant="amber">Owes {usd.format(outstanding)}</Badge>}
+                      {outstanding > 0 && <Badge variant="amber">Owes {formatCurrency(outstanding, currency)}</Badge>}
                     </div>
                     {client.notes && <div className="mt-0.5 text-[13.5px] text-muted">{client.notes}</div>}
                     <div className="mt-3 flex gap-3.5">
@@ -148,11 +151,11 @@ export function FreelanceTab({
           <div className="flex flex-col gap-2.5 text-[14px]">
             <div className="flex justify-between">
               <span className="text-muted">Paid</span>
-              <span className="font-bold text-ink">{usd.format(paidTotal)}</span>
+              <span className="font-bold text-ink">{formatCurrency(paidTotal, currency)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted">Outstanding</span>
-              <span className="font-bold text-amber">{usd.format(outstandingTotal)}</span>
+              <span className="font-bold text-amber">{formatCurrency(outstandingTotal, currency)}</span>
             </div>
           </div>
         </div>
@@ -200,7 +203,7 @@ export function FreelanceTab({
                       </button>
                     </div>
                   </div>
-                  <span className="text-[14.5px] font-bold text-ink">{usd.format(Number(invoice.amount))}</span>
+                  <span className="text-[14.5px] font-bold text-ink">{formatCurrency(Number(invoice.amount), currency)}</span>
                 </div>
               ))}
             </div>

@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ProjectDialog } from "@/components/work/project-dialog";
 import { removeProject, removeTask, saveTask, toggleTask } from "@/server/actions/work";
+import { formatCurrency } from "@/lib/currency";
 
 type Project = Tables<"work_projects"> & { client: Tables<"clients"> | null };
 type Task = Tables<"work_tasks">;
@@ -34,18 +35,18 @@ const STATUS_TONE: Record<string, "teal" | "amber" | "default" | "mahogany"> = {
   archived: "mahogany",
 };
 
-const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-
 export function ProjectDetailClient({
   project,
   tasks,
   transactions,
   clients,
+  currency,
 }: {
   project: Project;
   tasks: Task[];
   transactions: Transaction[];
   clients: ClientRow[];
+  currency: string;
 }) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
@@ -201,7 +202,7 @@ export function ProjectDetailClient({
                     (t.amount >= 0 ? "text-teal" : "text-ink")
                   }
                 >
-                  {currency.format(t.amount)}
+                  {formatCurrency(t.amount, currency)}
                 </span>
               </div>
             ))}

@@ -27,6 +27,7 @@ export default async function FinancesPage({
         savingsGoals={[]}
         workProjects={[]}
         snapshot={{ totalBalance: 0, monthIncome: 0, monthExpense: 0 }}
+        currency="USD"
         autoOpenTransaction={false}
       />
     );
@@ -34,10 +35,11 @@ export default async function FinancesPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("timezone")
+    .select("timezone, currency")
     .eq("id", user.id)
     .single();
   const timezone = profile?.timezone || "UTC";
+  const currency = profile?.currency || "USD";
 
   const [accounts, transactions, snapshot, { data: workProjects }] = await Promise.all([
     listAccounts(supabase, user.id),
@@ -57,6 +59,7 @@ export default async function FinancesPage({
         monthIncome: snapshot.monthIncome,
         monthExpense: snapshot.monthExpense,
       }}
+      currency={currency}
       autoOpenTransaction={newParam === "transaction"}
     />
   );

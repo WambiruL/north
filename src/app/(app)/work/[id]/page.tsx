@@ -14,7 +14,9 @@ export default async function ProjectDetailPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const user = (await getCurrentUserAndProfile())?.user ?? null;
+  const session = await getCurrentUserAndProfile();
+  const user = session?.user ?? null;
+  const currency = session?.profile?.currency || "USD";
 
   if (!user) notFound();
 
@@ -31,6 +33,7 @@ export default async function ProjectDetailPage({
       tasks={detail.tasks}
       transactions={detail.transactions}
       clients={clients}
+      currency={currency}
     />
   );
 }
