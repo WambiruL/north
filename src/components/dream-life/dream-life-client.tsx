@@ -31,7 +31,6 @@ import { FutureTimelineSection } from "@/components/dream-life/future-timeline-s
 import { BucketListSection } from "@/components/dream-life/bucket-list-section";
 import { ManifestoSection } from "@/components/dream-life/manifesto-section";
 import { JournalSection } from "@/components/dream-life/journal-section";
-import { ProgressSection } from "@/components/dream-life/progress-section";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type LifeArea = Tables<"life_areas">;
@@ -43,13 +42,9 @@ type FutureLetter = Tables<"future_letters">;
 
 const TABS = [
   { key: "vision", label: "Vision board" },
-  { key: "areas", label: "Life areas" },
-  { key: "action", label: "Dreams into action" },
-  { key: "timeline", label: "Future timeline" },
-  { key: "bucket", label: "Bucket list" },
-  { key: "manifesto", label: "Manifesto" },
+  { key: "action", label: "Right now" },
+  { key: "someday", label: "Someday" },
   { key: "journal", label: "Journal" },
-  { key: "progress", label: "Progress" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -362,15 +357,6 @@ export function DreamLifeClient({
         />
       )}
 
-      {activeTab === "areas" && (
-        <LifeAreasSection
-          lifeAreas={lifeAreas}
-          onAdd={openNewLifeArea}
-          onEdit={openEditLifeArea}
-          onDelete={handleDeleteLifeArea}
-        />
-      )}
-
       {activeTab === "action" && (
         <DreamsIntoActionSection
           dreams={dreams}
@@ -380,49 +366,44 @@ export function DreamLifeClient({
         />
       )}
 
-      {activeTab === "timeline" && (
-        <FutureTimelineSection
-          horizons={horizons}
-          onAdd={openNewHorizon}
-          onEdit={openEditHorizon}
-          onDelete={handleDeleteHorizon}
-        />
-      )}
-
-      {activeTab === "bucket" && (
-        <BucketListSection
-          items={bucketItems}
-          onAdd={openNewBucketItem}
-          onEdit={openEditBucketItem}
-          onDelete={handleDeleteBucketItem}
-        />
-      )}
-
-      {activeTab === "manifesto" && (
-        <ManifestoSection
-          principles={principles}
-          onAdd={openNewPrinciple}
-          onEdit={openEditPrinciple}
-          onDelete={handleDeletePrinciple}
-        />
+      {activeTab === "someday" && (
+        <div className="flex flex-col gap-10">
+          <LifeAreasSection
+            lifeAreas={lifeAreas}
+            onAdd={openNewLifeArea}
+            onEdit={openEditLifeArea}
+            onDelete={handleDeleteLifeArea}
+          />
+          <FutureTimelineSection
+            horizons={horizons}
+            onAdd={openNewHorizon}
+            onEdit={openEditHorizon}
+            onDelete={handleDeleteHorizon}
+          />
+          <BucketListSection
+            items={bucketItems}
+            onAdd={openNewBucketItem}
+            onEdit={openEditBucketItem}
+            onDelete={handleDeleteBucketItem}
+          />
+        </div>
       )}
 
       {activeTab === "journal" && (
-        <JournalSection
-          letters={letters}
-          onAdd={openNewLetter}
-          onEdit={openEditLetter}
-          onDelete={handleDeleteLetter}
-        />
-      )}
-
-      {activeTab === "progress" && (
-        <ProgressSection
-          dreams={dreams}
-          visionItems={visionItems}
-          letters={letters}
-          bucketItems={bucketItems}
-        />
+        <div className="flex flex-col gap-10">
+          <JournalSection
+            letters={letters}
+            onAdd={openNewLetter}
+            onEdit={openEditLetter}
+            onDelete={handleDeleteLetter}
+          />
+          <ManifestoSection
+            principles={principles}
+            onAdd={openNewPrinciple}
+            onEdit={openEditPrinciple}
+            onDelete={handleDeletePrinciple}
+          />
+        </div>
       )}
 
       <DreamDialog

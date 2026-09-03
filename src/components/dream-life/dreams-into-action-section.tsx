@@ -61,16 +61,10 @@ export function DreamsIntoActionSection({
                     <div className="mb-3 text-[11px] font-extrabold uppercase tracking-[.15em] text-faint">
                       Goal
                     </div>
-                    <div className="mb-4 text-[16.5px] font-bold leading-snug text-ink">
+                    <div className="mb-2.5 text-[16.5px] font-bold leading-snug text-ink">
                       {dream.goal_statement || "No goal set yet."}
                     </div>
-                    <div className="h-2 rounded-full bg-mahogany-soft">
-                      <div
-                        className="h-full rounded-full bg-amber transition-all"
-                        style={{ width: `${dream.progress}%` }}
-                      />
-                    </div>
-                    <div className="mt-2.5 text-[12.5px] font-extrabold text-muted">{pctLabel}</div>
+                    <div className="text-[12.5px] font-extrabold text-muted">{pctLabel}</div>
                   </div>
 
                   <div className="border-b border-line-2 px-7 py-6 md:border-b-0 md:border-r">
