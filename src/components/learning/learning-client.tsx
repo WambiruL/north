@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
-import { Pencil, Trash2, ExternalLink } from "lucide-react";
+import { Pencil, Trash2, ExternalLink, Plus } from "lucide-react";
 import type { Tables } from "@/types/database.types";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,6 +13,14 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Mark } from "@/components/ui/mark";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { LearningPathDialog } from "@/components/learning/learning-path-dialog";
 import { CourseDialog } from "@/components/learning/course-dialog";
 import { ShelfItemDialog } from "@/components/learning/shelf-item-dialog";
@@ -182,12 +190,42 @@ export function LearningClient({
   const overview = computeLearningOverview(courses, sessions, shelfItems, skills);
   const skillById = useMemo(() => new Map(skills.map((s) => [s.id, s])), [skills]);
 
+  const quickAddItems: { label: string; onClick: () => void }[] = [
+    { label: "Skill", onClick: () => { setEditingSkill(undefined); setSkillDialogOpen(true); } },
+    { label: "Learning project", onClick: () => { setEditingPath(undefined); setPathDialogOpen(true); } },
+    { label: "Course", onClick: () => { setEditingCourse(undefined); setCourseDialogOpen(true); } },
+    { label: "Practice project", onClick: () => { setEditingProject(undefined); setProjectDialogOpen(true); } },
+    { label: "Session", onClick: () => { setEditingSession(undefined); setSessionDialogOpen(true); } },
+    { label: "Moment", onClick: () => { setEditingMoment(undefined); setMomentDialogOpen(true); } },
+    { label: "Shelf item", onClick: () => { setEditingShelfItem(undefined); setShelfDialogOpen(true); } },
+    { label: "Curiosity", onClick: () => { setEditingCuriosity(undefined); setCuriosityDialogOpen(true); } },
+    { label: "Note", onClick: () => { setEditingNote(undefined); setNoteDialogOpen(true); } },
+    { label: "Journal entry", onClick: () => { setEditingJournal(undefined); setJournalDialogOpen(true); } },
+    { label: "Certificate", onClick: () => { setEditingCertificate(undefined); setCertificateDialogOpen(true); } },
+  ];
+
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-10">
-      <div>
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-[36px] font-bold leading-[1.14] tracking-tight text-ink">
           Welcome to your library.
         </h1>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="accent">
+              <Plus className="h-3.5 w-3.5" /> Quick add
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[13rem]">
+            <DropdownMenuLabel>Add to Learning</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {quickAddItems.map((item) => (
+              <DropdownMenuItem key={item.label} onSelect={item.onClick}>
+                {item.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Card className="p-6">
@@ -217,9 +255,9 @@ export function LearningClient({
 
       {/* Skill map */}
       <div className="flex flex-col gap-5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <SectionHeader title="Skill map" />
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="secondary" onClick={() => { setEditingSkill(undefined); setSkillDialogOpen(true); }}>
               Add a skill
             </Button>
@@ -361,9 +399,9 @@ export function LearningClient({
 
       {/* Practice */}
       <div className="flex flex-col gap-5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <SectionHeader title="Practice" />
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="secondary" onClick={() => { setEditingMoment(undefined); setMomentDialogOpen(true); }}>
               Add a moment
             </Button>
@@ -444,9 +482,9 @@ export function LearningClient({
 
       {/* Curiosities */}
       <div className="flex flex-col gap-5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <SectionHeader title="Curiosities" />
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="secondary" onClick={() => { setEditingNote(undefined); setNoteDialogOpen(true); }}>
               Write a note
             </Button>

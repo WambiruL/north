@@ -59,12 +59,12 @@ export function PreferencesCard({ preferences }: { preferences: PreferencesInput
         <CardTitle>Notifications and privacy</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col">
-        <div className="flex items-center gap-5 border-b border-line-2 py-5">
+        <div className="flex flex-col gap-3 border-b border-line-2 py-5 sm:flex-row sm:items-center sm:gap-5">
           <div className="flex-1">
             <div className="mb-0.5 text-[15.5px] font-bold text-ink">How the home page should feel</div>
             <div className="text-[13.5px] text-muted">{DENSITY_LABELS[values.homeDensity].desc}</div>
           </div>
-          <div className="flex shrink-0 gap-1 rounded-[11px] bg-surface-2 p-1">
+          <div className="flex shrink-0 flex-wrap gap-1 rounded-[11px] bg-surface-2 p-1">
             {homeDensityValues.map((density) => (
               <button
                 key={density}
@@ -82,7 +82,10 @@ export function PreferencesCard({ preferences }: { preferences: PreferencesInput
           </div>
         </div>
         {SWITCHES.map((sw) => (
-          <div key={sw.key} className="flex items-center gap-5 border-b border-line-2 py-5 last:border-0 last:pb-0">
+          <div
+            key={sw.key}
+            className="flex items-center gap-5 border-b border-line-2 py-5 last:border-0 last:pb-0"
+          >
             <div className="flex-1">
               <div className="mb-0.5 text-[15.5px] font-bold text-ink">{sw.label}</div>
               <div className="text-[13.5px] text-muted">{sw.desc}</div>

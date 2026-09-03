@@ -88,18 +88,21 @@ export function AccountCard({ email }: { email: string }) {
               Sign out
             </Button>
           </form>
-          <button
-            type="button"
-            onClick={() => setDeleteOpen(true)}
-            className="ml-auto text-[14px] font-bold text-mahogany transition-colors hover:text-amber"
-          >
-            Delete account
-          </button>
         </div>
         <p className="text-[13.5px] leading-relaxed text-faint">
           Your entries are yours. Export gives you every check-in, note, and collection as a plain file
           you can keep.
         </p>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line-2 pt-4">
+          <div className="text-[12.5px] text-faint">Permanent, and can&apos;t be undone.</div>
+          <button
+            type="button"
+            onClick={() => setDeleteOpen(true)}
+            className="text-[14px] font-bold text-mahogany transition-colors hover:text-amber"
+          >
+            Delete account
+          </button>
+        </div>
       </CardContent>
 
       <Dialog open={passwordOpen} onOpenChange={setPasswordOpen}>
